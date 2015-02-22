@@ -1,0 +1,4 @@
+Rune 0.75
+Windows Debug build
+mysql connections
+ERROR: Mysql query error: Table 'rune.guildsiege' doesn't exist query: describe guildsiegemysql query

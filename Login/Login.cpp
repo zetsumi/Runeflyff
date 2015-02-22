@@ -55,6 +55,7 @@ char mysqldb[257];
 int mysqlport=0; 
 MYSQL *connection=0;
 MYSQL *connection3=0;
+char dateval[257];
 
 //pmutex reconnectmutex;
 void reconnectsql(MYSQL **con)
@@ -64,6 +65,8 @@ void reconnectsql(MYSQL **con)
 	*con=mysql_init(0);
 	if(!mysql_real_connect(*con, mysqlhost, mysqluser, mysqlpasswd, mysqldb, mysqlport, (char*)0, 0))
 		logger.log("Mysql reconnect error: %s\n", mysql_error(*con));
+	else
+		printf("Reconnecting to MySql!\n");
 }
 
 
@@ -191,8 +194,18 @@ public:
 		int a,b;
 		unsigned long long t=(unsigned long long)time(0);
 		t-=120;								//120 seconds
-		sr.get(a);
-		sr.forward(a);
+		//sr.get(a);
+		//sr.forward(a);
+		sr.getpstr(puffer, 128);
+		string dateval=puffer;
+		if(dateval != "20090727")
+		{
+			*bs << 0xfe << 0x6B;
+			bs->inc();
+			printf("Player with old version of client(0x6B)!\n");
+			return;
+		}
+
 		sr.getpstr(puffer, 128);
 		name=puffer;
 		sr.getpstr(puffer, 128);
@@ -216,7 +229,7 @@ public:
 
 		if(passwd!=std::string(puffer))
 		{
-			*bs << 0xfe << 0x79;
+			*bs << 0xfe << 0x78;
 			bs->inc();
 			return;
 		}
@@ -274,10 +287,10 @@ public:
 //					if(s2.next())
 //					{
 //						b=toInt(s2[0]);
-//					}
+//					}	
 //					s2.freeup();
 				}else n=41;
-				logger.log("nplayers=%d max=%d\n", b, n);
+				logger.log("CurrentPlayers=%d MaxPlayer=%d\n", b, n);
                 *bs << toInt(s1["sid"]) << a;
                 bs->sndpstr(s1["name"].c_str());
 			    *bs << 0 << 1 << b << 1 << n;
@@ -304,6 +317,8 @@ int loadsqlserverip(char *filename)
 		printf("error opening %s!\n", filename);
 		exit(1);
 	}
+	else
+		printf("INFO: Loaded server.txt!\n");
     f1.getline(mysqlhost,256);
     f1.getline(mysqluser,256);
     f1.getline(mysqlpasswd,256);
@@ -312,6 +327,7 @@ int loadsqlserverip(char *filename)
     sscanf(puffer, "%d", &mysqlport);
     f1.getline(puffer,256);
     sscanf(puffer, "%d", &a);
+	f1.getline(dateval,256);
     f1.close();
     return a;
 
@@ -358,8 +374,12 @@ int main(int argc, char *argv[])
 
 	if(!mysql_real_connect(connection, mysqlhost, mysqluser, mysqlpasswd, mysqldb, mysqlport, (char*)0, 0))
 	    printf("error connecting to mysql database! %s\n", mysql_error(connection));
+	else
+		printf("INFO: Connected to Mysql(connection)!\n");
 	if(!mysql_real_connect(connection3, mysqlhost, mysqluser, mysqlpasswd, mysqldb, mysqlport, (char*)0, 0))
 	    printf("error connecting to mysql database! %s\n", mysql_error(connection3));
+		else
+		printf("INFO: Connected to Mysql(connection3)!\n");
 
 
     int starttime=time(0);
@@ -406,7 +426,7 @@ int main(int argc, char *argv[])
 					{
 						i->errorstate=true;
 						i->timeout=0;
-						logger.log("timeout dc\n");
+						logger.log("Connection time out! Player disconnected!\n");
 					}
 				}
             }

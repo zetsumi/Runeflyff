@@ -1,0 +1,6 @@
+localhost
+root
+polosas
+rune
+0
+1

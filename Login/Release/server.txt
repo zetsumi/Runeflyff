@@ -1,0 +1,7 @@
+localhost
+root
+polosas
+rune
+0
+1
+20090727
