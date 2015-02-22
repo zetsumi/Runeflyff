@@ -1,5 +1,5 @@
 # Runeflyff
-# Version 0.74
+# Version 0.74.2.1
 
 ---- About ----
 This Flyff v6 emulator was originally started in 2008/2009 by Duotune. It was too cool to let die.
@@ -16,9 +16,10 @@ I recommend using the MySQL 5.x branch.
 
 ---- Build notes ------
 The following are the current dependencies to build Runeflyff:
-	* libmysqlclient (you'll want an old version of this - 5.0 if you can get it)
-	* pthreads-win32 (available for free online, but a pain to hunt down)
-	* Note: The cmake branch will include both of these
+	* libmysqlclient (under lib folder - I'd like to move to the mariaDB 6.x client eventually)
+	* pthreads-win32 (under lib folder - included available for free online)
+	* I've been able to build under Visual Studio 2008 and 2010.
+	* Note: The Cmake build doesn't copy the dlls yet, so you'll need to do this by hand.
 
 ---- Disclaimer ---
 There is no warranty, implied warranty, or liability on my part if you use this software. It might

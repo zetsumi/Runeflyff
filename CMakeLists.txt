@@ -1,0 +1,4 @@
+PROJECT(Runeflyff)
+
+ADD_SUBDIRECTORY(login)
+ADD_SUBDIRECTORY(world)
