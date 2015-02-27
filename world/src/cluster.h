@@ -16,14 +16,19 @@
 #include "m_queue.h"
 #include "scheduler.h"
 #include "listremover.h"
+#include <memory>
 
-void* clusterthread(void *t);
-void *recieverthread(void *t);
+void* clusterthread( void *t);
+void* recieverthread(void *t);
+void* loadsavethread(void *t);
+
 class cluster;
 struct threadparm
 {
 	int n;
-	cluster *c;
+
+	std::shared_ptr<cluster> c;
+	//cluster *c;
 };
 
 
@@ -146,7 +151,7 @@ public:
 	void setsiegestate(tsiegestate a);
 	pmutex savemutex;
 	static const int nmaxplayers=1001;
-	
+
 	bool cwcageempty()
 	{
 		return !cwcage;

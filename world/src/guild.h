@@ -102,7 +102,7 @@ public:
 	static void loadallguilds();
 	static void saveallguilds();
 	static void getallguildinfo(tplayer *p);
-	static tguild* tguild::getguild(int id);
+	static tguild* getguild(int id);
 	int getowner();
 	int getguildid();
 	void changelead(tplayer *p, int id1, int id2);

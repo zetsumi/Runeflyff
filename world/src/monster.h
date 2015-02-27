@@ -66,7 +66,7 @@ protected:
 	int *bsstate, *bsstate2;
 	virtual void onKo(character_buffable *p);
 	long long staytime;
-	void dropitem(item &targy, vector3d<> &p, tplayer *k, bool i=false);
+	void dropitem(item &targy, vector3d<> p, tplayer *k, bool i=false);
 public:
 	schedulerl<character_mob*>::sremover mobremover;
 	schedulerl<character_mob*>::sremover agromobremover;

@@ -150,7 +150,7 @@ void tparty::sendpartydata()
 	bs << nmembers;
 	bs << a << a << nmembers << level << exp << points << expmode << itemmode << 0 << 0 << 0 << 0 << 0;
 	if(advanced)bs.sndpstr(name);
-	
+
 	int b;
 	for(a=0,b=0;(a<maxpartymembers)&&(b<nmembers);a++)
 		if(members.at(a)->dbid!=-1)
@@ -361,7 +361,7 @@ bool tparty::leave2(playerdata *pd,int a, tplayer *qc)
 							members.at(a)=q;
 							break;
 						}
-					
+
 				}
 				sendpartydata();
 			}
@@ -427,7 +427,7 @@ void tparty::addexp(int Aexp, int Alevel, int Apoint)
             }
         }
     }while(oldlevel!=level);
-    
+
     bs << (char)0x85 << this->exp << this->level << this->points;
     bs.inc();
     partymulticast(bs);
@@ -645,7 +645,7 @@ tparty* tparty::login(tplayer *p)
 	return 0;
 */
 	ul m=partymutex.lock();
-	if(!used)return false;
+	if(!used)return NULL;
 	for(int a=0;a<maxpartymembers;a++)
 		if(members.at(a)->dbid==p->dbid)
 		{
@@ -738,7 +738,7 @@ tplayer* tparty::getseq(tplayer *p)
 		{
 			seq++;
 			if(seq>=(int)members.size())seq=0;
-			
+
 		}while(members[seq]->pl==0);
 		return members[seq]->pl;
 		break;
@@ -754,7 +754,7 @@ tplayer* tparty::getseq(tplayer *p)
 			seq++;
 			if(seq>=(int)members.size())seq=0;
 			if(members[seq]->pl!=0)a--;
-			
+
 		}
 		break;
 	}
@@ -819,7 +819,7 @@ void tparty::managePexp(tplayer *tamado, double expval, int elevel)
 //		tplayer* around[8];
 		std::vector2<tplayer*> around;
 		around.resize(members.size(), 0);
-	
+
 	    for(a=0;a<(int)members.size();a++)
 			if(members.at(a)->pl!=0)if(members.at(a)->pl->cl==tamado->cl)
 		{
@@ -844,15 +844,15 @@ void tparty::managePexp(tplayer *tamado, double expval, int elevel)
 			tamado->addexp(((long long)expval)*0.7, elevel);
 			expval*=0.3;
 			expval/=(b-1);
-			
+
 			for(a=0;a<b;a++)
 				if(around.at(a)!=tamado)around.at(a)->addexp((long long)expval, elevel);
 		}else
 		{
-			
+
 			for(a=0;a<b;a++)around.at(a)->addexp((long long)expval, elevel);
 		}
-	}    
+	}
 	}
 	addexp(elevel);
 }

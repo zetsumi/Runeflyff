@@ -20,31 +20,31 @@ class tgridcellremover
 	{
 	public:
 		std::list<tplayer*>::iterator i;
-		tplayer_p(const std::list<tplayer*>::iterator &j):i(j){}
+		tplayer_p(const std::list<tplayer*>::iterator j):i(j){}
 	};
 	class character_mob_p:public pbase
 	{
 	public:
 		std::list<character_mob*>::iterator i;
-		character_mob_p(std::list<character_mob*>::iterator &j):i(j){}
+		character_mob_p(std::list<character_mob*>::iterator j):i(j){}
 	};
 	class character_item_p:public pbase
 	{
 	public:
 		std::list<character_item*>::iterator i;
-		character_item_p(std::list<character_item*>::iterator &j):i(j){}
+		character_item_p(std::list<character_item*>::iterator j):i(j){}
 	};
 	class character_obj_p:public pbase
 	{
 	public:
 		std::list<character_obj*>::iterator i;
-		character_obj_p(std::list<character_obj*>::iterator &j):i(j){}
+		character_obj_p(std::list<character_obj*>::iterator j):i(j){}
 	};
 	class character_npc_p:public pbase
 	{
 	public:
 		std::list<character_npc*>::iterator i;
-		character_npc_p(std::list<character_npc*>::iterator &j):i(j){}
+		character_npc_p(std::list<character_npc*>::iterator j):i(j){}
 	};
 
 	std::list<tplayer*>::iterator getplayeriterator()
@@ -115,7 +115,7 @@ class tgridcellremover
 		return ((character_item_p*)i)->i;
 	}
 
-	void setandadd(tgridcell *g, std::list<tplayer*>::iterator &j)
+	void setandadd(tgridcell *g, std::list<tplayer*>::iterator j)
 	{
 //#ifdef _DEBUG
 		if(owner!=0)throw error("owner isnt null", "setanddd player");
@@ -126,7 +126,7 @@ class tgridcellremover
 		i=new tplayer_p(j);
 		added=true;
 	}
-	void setandadd(tgridcell *g, std::list<character_mob*>::iterator &j)
+	void setandadd(tgridcell *g, std::list<character_mob*>::iterator j)
 	{
 //#ifdef _DEBUG
 		if(owner!=0)throw error("owner isnt null", "setandadd mob");
@@ -137,7 +137,7 @@ class tgridcellremover
 		i=new character_mob_p(j);
 		added=true;
 	}
-	void setandadd(tgridcell *g, std::list<character_obj*>::iterator &j)
+	void setandadd(tgridcell *g, std::list<character_obj*>::iterator j)
 	{
 //#ifdef _DEBUG
 		if(owner!=0)throw error("owner isnt null", "setandadd obj");
@@ -148,7 +148,7 @@ class tgridcellremover
 		i=new character_obj_p(j);
 		added=true;
 	}
-	void setandadd(tgridcell *g, std::list<character_npc*>::iterator &j)
+	void setandadd(tgridcell *g, std::list<character_npc*>::iterator j)
 	{
 //#ifdef _DEBUG
 		if(owner!=0)throw error("owner isnt null", "setandadd npc");
@@ -159,7 +159,7 @@ class tgridcellremover
 		i=new character_npc_p(j);
 		added=true;
 	}
-	void setandadd(tgridcell *g, std::list<character_item*>::iterator &j)
+	void setandadd(tgridcell *g, std::list<character_item*>::iterator j)
 	{
 //#ifdef _DEBUG
 		if(owner!=0)throw error("owner isnt null", "setandadd item");

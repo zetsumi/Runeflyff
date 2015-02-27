@@ -142,7 +142,7 @@ public:
 	mtype(){};
 	mtype(const T& a)
 	{
-		ul=mutex.lock();
+		ul m=mutex.lock();
 		val=a;
 	};
 	void operator=(const T& a)

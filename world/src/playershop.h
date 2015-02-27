@@ -4,6 +4,7 @@
 #include "vector2.h"
 #include <map>
 #include "pmutex.h"
+#include <string>
 
 class tplayer;
 class buffer;

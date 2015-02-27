@@ -5,7 +5,9 @@ extern const int desiredlatency;
 #include <list>
 #include "vector2.h"
 
-template <class T>
+class error;
+
+template <typename T>
 class schedulerl
 {
 	long long nexttime, interval;
@@ -18,6 +20,7 @@ class schedulerl
 	typename std::list<T>::iterator itt;
 public:
 	typedef typename std::list<T>::iterator listIteratorT;
+	//typedef typename std::list<T>::const_iterator listIteratorT_const;
 	class sremover
 	{
 		friend class schedulerl<T>;
@@ -25,7 +28,7 @@ public:
 		listIteratorT remover;
 		int n;
 		int c;
-		void set(int a, listIteratorT &i, schedulerl<T> *o)
+		void set(int a, listIteratorT i, schedulerl<T> *o)
 		{
 //#ifdef _DEBUG
 			if(owner!=0)throw error("wasn't removed", "scheduler sremover set");
@@ -134,7 +137,7 @@ public:
 //		if(i.owner!=this)throw "remover error";
 //#endif
 		if(a!=iterating)cont[a].erase(i.remover);
-		else 
+		else
 		{
 			if(itt==i.remover)
 			{

@@ -4,6 +4,7 @@
 #include "vector2.h"
 #include <string>
 #include "stringf.h"
+#include <stdexcept>
 
 class reciever
 {

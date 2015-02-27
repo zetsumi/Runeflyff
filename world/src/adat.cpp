@@ -184,9 +184,9 @@ int skills1[32][45]={\
 #define st(str,sta,dex,intl) (str+sta*0x100+dex*0x10000+intl*0x1000000)
 
 unsigned int itemstats1[49]={st(0,0,0,0),
-st(1,0,0,0), st(0,0,1,0), st(0,0,0,1), st(0,1,0,0), st(1,1,0,0), st(1,0,1,0), st(0,1,1,0), st(0,1,0,1), 
+st(1,0,0,0), st(0,0,1,0), st(0,0,0,1), st(0,1,0,0), st(1,1,0,0), st(1,0,1,0), st(0,1,1,0), st(0,1,0,1),
 st(2,0,0,0), st(0,0,2,0), st(0,0,0,2), st(0,2,0,0), st(2,1,0,0), st(1,2,0,0), st(2,0,1,0), st(1,0,2,0), st(0,1,2,0), st(0,2,1,0), st(0,1,0,2), st(0,2,0,1),
-st(3,0,0,0), st(0,0,3,0), st(0,0,0,3), st(0,3,0,0), st(2,2,0,0), st(1,3,0,0), st(3,2,0,0), st(2,0,2,0), st(3,0,1,0), st(1,0,3,0), st(0,2,2,0), st(0,1,3,0), st(0,3,1,0), st(0,2,0,2), st(0,1,0,3), st(0,3,0,1), 
+st(3,0,0,0), st(0,0,3,0), st(0,0,0,3), st(0,3,0,0), st(2,2,0,0), st(1,3,0,0), st(3,2,0,0), st(2,0,2,0), st(3,0,1,0), st(1,0,3,0), st(0,2,2,0), st(0,1,3,0), st(0,3,1,0), st(0,2,0,2), st(0,1,0,3), st(0,3,0,1),
 st(4,0,0,0), st(0,0,4,0), st(0,0,0,4), st(0,4,0,0), st(3,2,0,0), st(2,3,0,0), st(3,0,2,0), st(2,0,3,0), st(0,2,3,0), st(0,3,2,0), st(0,2,0,3), st(0,3,0,2)
 };
 
@@ -885,7 +885,7 @@ void datainit()
 			skills[b].push_back(skills1[b][a]);
 		}
 	}
-	
+
 	guildexp.reserve(50);
 	for(a=0;a<50;a++)
 	{
@@ -913,7 +913,7 @@ void datainit()
 			}
 		}
 	}
-	
+
 	itemdata id1;
 	sqlquery s1(connections[0], string("itemlist"));
 	s1.select("max(id)");
@@ -923,11 +923,11 @@ void datainit()
 		itemlist.resize(b+1);
 	}
 	s1.freeup();
-	
+
 	s1.selectw("enabled!=0");
 	int c_id=s1.getColumnIndex("id");
 	int c_name=s1.getColumnIndex("name");
-	int c_itemLV=s1.getColumnIndex("limitlevel1");	
+	int c_itemLV=s1.getColumnIndex("limitlevel1");
 	int c_itemjob=s1.getColumnIndex("itemjob");
 	int c_abilitymin=s1.getColumnIndex("abilitymin");
 	int c_abilitymax=s1.getColumnIndex("abilitymax");
@@ -972,7 +972,7 @@ void datainit()
 		id1.gender=toInt(s1[c_itemsex]);
 		id1.duration=toInt(s1[c_duration]);
 		id1.gendrop=toInt(s1[c_gendrop]);
-		
+
 		id1.destparam1=toInt(s1[c_destparam1]);
 		id1.destparam2=toInt(s1[c_destparam2]);
 		id1.destparam3=toInt(s1[c_destparam3]);
@@ -1117,7 +1117,7 @@ void datainit()
 
 		s9.selectw("id="+toString(b), "exetarget, continuouspain, skillready, itemtype, referstat1, referstat2, spelltype, expertmax, refertarget1, refertarget2, refervalue1, refervalue2, itemjob, handed, weapontype");
 		if(s9.next())
-		{ 
+		{
 			skilllist[b][c].skilltype=toInt(s9[0]);
 			skilllist[b][c].dot=toInt(s9[1]);
 			skilllist[b][c].cooldown=toInt(s9[2]);
@@ -1332,16 +1332,21 @@ void datainit()
 	s3.freeup();
 
 
-	for(std::map<int, tquest*>::iterator i=tquest::quests.begin();i!=tquest::quests.end();++i)
+	for(std::map<int, tquest*>::iterator questIter=tquest::quests.begin();questIter!=tquest::quests.end();++questIter)
 	{
-		for(std::map<int, tquest::tquestitems>::iterator j=i->second->questitems.begin();j!=i->second->questitems.end();++j)
+		for(std::map<int, tquest::tquestitems>::iterator questItemsIter=questIter->second->questitems.begin();questItemsIter!=questIter->second->questitems.end();++questItemsIter)
 		{
-			monsterlist.at(j->second.monsterid).quests.push_back(mobdata2::questdata(j->second.dropid, j->second.number, j->second.dropchance, i->second));
+			monsterlist.at(questItemsIter->second.monsterid)
+                .quests.push_back( mobdata2::questdata(
+                    questItemsIter->second.dropid,
+                    questItemsIter->second.number,
+                    questItemsIter->second.dropchance,
+                    questIter->second) );
 		}
 		a=0;
-		for(std::vector2<std::pair<int, int> >::iterator j=i->second->killmobs.begin();j!=i->second->killmobs.end();++j)
+		for(std::vector2<std::pair<int, int> >::iterator j=questIter->second->killmobs.begin();j!=questIter->second->killmobs.end();++j)
 		{
-			monsterlist.at(j->first).quest_killmobs.insert(std::pair<int, std::pair<int, int> >(i->second->questid, std::pair<int, int>(j->second, a)));
+			monsterlist.at(j->first).quest_killmobs.insert(std::pair<int, std::pair<int, int> >(questIter->second->questid, std::pair<int, int>(j->second, a)));
 			a++;
 		}
 	}
@@ -1550,10 +1555,10 @@ void datainit()
 		pxplist[a]=pxpdata1[a];
 		explist[a]=expdata1[a];
 	}
-	
 
 
-	
+
+
 	for(a=0;a<49;a++)itemstats[a]=itemstats1[a];
 	for(a=0;a<21;a++)
 	{

@@ -299,7 +299,7 @@ while(!endprg)
 
 		toload.push(&players[a]);
 	}
-	
+
 
 
 	while(!toload.empty())
@@ -495,23 +495,23 @@ void cluster::cmain()
 	mobspawner_q_oaf pinkroach_queen(705, 1, 10405);	//wake roach water
 	mobspawner_q_oaf blueroach_queen(718, 1, 10405);	//wake roach water
 
-	new gobjspawner(this, 38, 201, 1217, 85, 789, 5, 300, 16, 12, blueroach_larva); 
-	new gobjspawner(this, 38, 201, 1259, 85, 799, 3, 60, 6, 7, blueroach_larva); 
-	new gobjspawner(this, 38, 201, 1243, 85, 813, 3, 300, 10, 10, blueroach_larva); 
-	new gobjspawner(this, 38, 201, 1251, 85, 779, 5, 60, 13, 11, blueroach_larva); 
+	new gobjspawner(this, 38, 201, 1217, 85, 789, 5, 300, 16, 12, blueroach_larva);
+	new gobjspawner(this, 38, 201, 1259, 85, 799, 3, 60, 6, 7, blueroach_larva);
+	new gobjspawner(this, 38, 201, 1243, 85, 813, 3, 300, 10, 10, blueroach_larva);
+	new gobjspawner(this, 38, 201, 1251, 85, 779, 5, 60, 13, 11, blueroach_larva);
 
-	new gobjspawner(this, 36, 201, 1391, 85, 668, 3, 300, 11, 11, pinkroach_larva); 
-	new gobjspawner(this, 36, 201, 1380, 85, 701, 3, 300, 12, 13, pinkroach_larva); 
-	new gobjspawner(this, 36, 201, 1435, 85, 692, 3, 300,  8, 11, pinkroach_larva); 
-	new gobjspawner(this, 36, 201, 1429, 85, 665, 5, 300, 19, 12, pinkroach_larva); 
+	new gobjspawner(this, 36, 201, 1391, 85, 668, 3, 300, 11, 11, pinkroach_larva);
+	new gobjspawner(this, 36, 201, 1380, 85, 701, 3, 300, 12, 13, pinkroach_larva);
+	new gobjspawner(this, 36, 201, 1435, 85, 692, 3, 300,  8, 11, pinkroach_larva);
+	new gobjspawner(this, 36, 201, 1429, 85, 665, 5, 300, 19, 12, pinkroach_larva);
 
-	new gobjspawner(this, 35, 201, 1430, 85, 662, 1,  60, 22, 13, pinkroach_queen); 
-	new gobjspawner(this, 35, 201, 1381, 85, 695, 1,  60, 12, 11, pinkroach_queen); 
-	new gobjspawner(this, 35, 201, 1393, 85, 666, 1,  60, 12, 15, pinkroach_queen); 
+	new gobjspawner(this, 35, 201, 1430, 85, 662, 1,  60, 22, 13, pinkroach_queen);
+	new gobjspawner(this, 35, 201, 1381, 85, 695, 1,  60, 12, 11, pinkroach_queen);
+	new gobjspawner(this, 35, 201, 1393, 85, 666, 1,  60, 12, 15, pinkroach_queen);
 
-	new gobjspawner(this, 37, 201, 1211, 85, 782, 1,  60, 13,  9, blueroach_queen); 
-	new gobjspawner(this, 37, 201, 1250, 85, 777, 1,  60, 10, 11, blueroach_queen); 
-	new gobjspawner(this, 37, 201, 1243, 85, 813, 1,  60, 10,  7, blueroach_queen); 
+	new gobjspawner(this, 37, 201, 1211, 85, 782, 1,  60, 13,  9, blueroach_queen);
+	new gobjspawner(this, 37, 201, 1250, 85, 777, 1,  60, 10, 11, blueroach_queen);
+	new gobjspawner(this, 37, 201, 1243, 85, 813, 1,  60, 10,  7, blueroach_queen);
 
 
 	new f_telc(this, 1, vector3d<>(7622.39f, 154.75f, 4282.13f), 5, vector3d<>(707, 80, 693), 200);
@@ -555,7 +555,7 @@ void cluster::cmain()
 	/*9*/
 
 	logger.log("%s started\npk=%d\n", name.c_str(), (int)pkval);
-	do 
+	do
 	{
 	try
 	{
@@ -706,7 +706,7 @@ void cluster::cmain()
 		logger.elog("[%s]exception...\n", this->name.c_str());
 	}
 #endif
-	
+
 	}while(!endprg);
 
     pthread_join(*crthread,NULL);
@@ -770,7 +770,7 @@ cluster::cluster(int n, const char *nev, bool pk1)
 	npcid=700000000;
 	itemid=1000000000;
 	tp.n=n;
-	tp.c=this;
+	tp.c= std::shared_ptr<cluster>(this);
 
 	this->name=nev;
 
@@ -812,18 +812,18 @@ cluster::~cluster()
 
 void cluster::crmain()
 {
-	std::vector2<mcon*> c;
+	std::vector2<std::shared_ptr<mcon>> c;
 	c.resize(2);
 
 	c.resize(2);
 	for(int a=0;a<(int)c.size();a++)
 	{
-		c[a]=new mcon();
+		c[a]= std::shared_ptr<mcon>(new mcon());
 		c[a]->init(mysqlhost, mysqluser, mysqlpasswd, mysqldb);
 	}
 
-	dbaccounts4load.init(c[0], "accounts");
-	dbcharacters4load.init(c[1], "characters");
+	dbaccounts4load.init(c[0].get(), "accounts");
+	dbcharacters4load.init(c[1].get(), "characters");
 	doselect();
 	dbcharacters4load.freeup();
 	dbaccounts4load.freeup();
@@ -877,7 +877,7 @@ void* loadsavethread(void *t)
 {
 	cluster *c;
 	int cancelstate;
-	c=((threadparm*)t)->c;
+	c=((threadparm*)t)->c.get();
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&cancelstate);
 	//mysql_thread_init();
 	c->lsmain();
@@ -891,7 +891,7 @@ void* recieverthread(void *t)
 {
 	cluster *c;
 	int cancelstate;
-	c=((threadparm*)t)->c;
+	c=((threadparm*)t)->c.get();
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&cancelstate);
 	//mysql_thread_init();
 	c->crmain();
@@ -905,7 +905,7 @@ void* clusterthread(void *t)
 {
 	cluster *c;
 	int cancelstate;
-	c=((threadparm*)t)->c;
+	c=((threadparm*)t)->c.get();
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&cancelstate);
 	//mysql_thread_init();
 	c->cmain();
@@ -1007,7 +1007,7 @@ tplayer* cluster::getplayer(int id)
 		r=&players[id];
 		if(r->getticketnl()==-1)r=0;
 	}
-	
+
 	return r;
 }
 
@@ -1396,47 +1396,47 @@ void cluster::setsiegestate(tsiegestate a)
 	case tsnone:
 //		if((siegestate==apply)||(siegestate==ending))
 		{
-			siegestate=a; 
+			siegestate=a;
 		}//else logger.log("Wrong siegestate %d\n", (int)a);
 		break;
 	case apply:
 //		if((siegestate==tsnone)||(siegestate==ending))
 		{
-			siegestate=a; 
+			siegestate=a;
 		}//else logger.log("Wrong siegestate %d\n", (int)a);
 		break;
 	case prepare:
 		if(siegestate==apply)
 		{
-			siegestate=a; 
+			siegestate=a;
 			siege_prepare();
 		}else logger.log("Wrong siegestate %d\n", (int)a);
 		break;
 	case teleportin:
 		if(siegestate==prepare)
 		{
-			siegestate=a; 
+			siegestate=a;
 			siege_teleportin();
 		}else logger.log("Wrong siegestate %d\n", (int)a);
 		break;
 	case teleportdown:
 		if(siegestate==teleportin)
 		{
-			siegestate=a; 
+			siegestate=a;
 			siege_teleportdown();
 		}else logger.log("Wrong siegestate %d\n", (int)a);
 		break;
 	case running:
 		if(siegestate==teleportdown)
 		{
-			siegestate=a; 
+			siegestate=a;
 			siege_running();
 		}else logger.log("Wrong siegestate %d\n", (int)a);
 		break;
 	case ending:
 		if(siegestate==running)
 		{
-			siegestate=a; 
+			siegestate=a;
 		}
 		else logger.log("Wrong siegestate %d\n", (int)a);
 		break;
@@ -1476,7 +1476,7 @@ void cluster::gw_attackable()
 			p->siege_attackable=(a==1);
 			bs.cmd(p->getId(), 0xb8) << (char)16 << p->getId() << a;
 		}
-		
+
 	}
 
 	for(std::list<tguild::tguildmember*>::iterator i=siegeplayers.begin();i!=siegeplayers.end();++i)
@@ -1562,7 +1562,7 @@ void cluster::siege_prepare()
 			cancelsiege(nguilds);
 			return;
 		}
-	
+
 		s1.selectw("guildid>=0 order by money desc");
 		while(s1.next())
 		{
@@ -1673,7 +1673,7 @@ void cluster::showsiegestats()
 	a = getsieget()-ido;
 //	bs.cmd(-1, 0xb8) << (char)34 << a;
 
-	
+
 	for(std::list<tplayer*>::iterator i=ongwmap.begin();i!=ongwmap.end();++i)
 	{
 		(*i)->add(bs);

@@ -2,20 +2,21 @@
 #define __vector2_h__
 
 #include <vector>
+#include <config.h>
 
 namespace std
 {
-template <class T>
-class vector2:private std::vector<T>
+template <typename T>
+class vector2 : private std::vector<T>
 {
 public:
 	vector2(){}
 	vector2(size_t a):std::vector<T>::vector(a){}
 
-	typedef std::vector<T>::iterator iterator;
-	typedef std::vector<T>::const_iterator const_iterator;
-	typedef std::vector<T>::reverse_iterator reverse_iterator;
-	typedef std::vector<T>::const_reverse_iterator const_reverse_iterator;
+    typedef templateTypedef std::vector<T>::iterator iterator;
+	typedef templateTypedef std::vector<T>::const_iterator const_iterator;
+	typedef templateTypedef std::vector<T>::reverse_iterator reverse_iterator;
+	typedef templateTypedef std::vector<T>::const_reverse_iterator const_reverse_iterator;
 	void resize(size_t a)
 	{
 		std::vector<T>::resize(a);
@@ -48,36 +49,35 @@ public:
 	{
 		return std::vector<T>::size();
 	}
-
-	iterator begin()
+    templateTypedef vector<T>::iterator begin()
 	{
 		return std::vector<T>::begin();
 	}
-	const_iterator begin() const
+    templateTypedef vector<T>::const_iterator begin() const
 	{
 		return std::vector<T>::begin();
 	}
-	iterator end()
+    templateTypedef vector<T>::iterator end()
 	{
 		return std::vector<T>::end();
 	}
-	const_iterator end() const
+    templateTypedef vector<T>::const_iterator end() const
 	{
 		return std::vector<T>::end();
 	}
-	reverse_iterator rbegin()
+    templateTypedef vector<T>::reverse_iterator rbegin()
 	{
 		return std::vector<T>::rbegin();
 	}
-	const_reverse_iterator rbegin() const
+    templateTypedef vector<T>::const_reverse_iterator rbegin() const
 	{
 		return std::vector<T>::rbegin();
 	}
-	reverse_iterator rend()
+    templateTypedef vector<T>::reverse_iterator rend()
 	{
 		return std::vector<T>::rend();
 	}
-	const_reverse_iterator rend() const
+    templateTypedef vector<T>::const_reverse_iterator rend() const
 	{
 		return std::vector<T>::rend();
 	}

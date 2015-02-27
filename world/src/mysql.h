@@ -14,6 +14,7 @@
 
 #include "logger.h"
 #include "pmutex.h"
+#include <stdexcept>
 
 
 class mcon
@@ -32,7 +33,7 @@ class mcon
 			if(!mysql_real_connect(con, host.c_str(), user.c_str(), passwd.c_str(), db.c_str(), 0, (char*)0, 0))
 			{
 				Sleep(1);
-			}else 
+			}else
 			{
 				//mysql_options(con, MYSQL_OPT_RECONNECT, &reconnect);
 				break;
@@ -446,7 +447,7 @@ public:
 	}
 	void checkcolumn(const std::string &s)
 	{
-/*		
+/*
 		if(columnguard.empty())
 		{
 			columnguard.insert(s);
@@ -462,7 +463,7 @@ public:
 				throw error("Multiple column " + s + " in query", "sqlquery::checkcolumn");
 			}
 		}
-*/		
+*/
 	}
 };
 

@@ -52,7 +52,7 @@ public:
 	tplayer *forbidden;
 	buffer():len(0),commandnumber(0),forbidden(0),top(0){};
 
-	buffer::buffer(const buffer& a)
+	buffer(const buffer& a)
 	:forbidden(a.forbidden),len(a.len),
 	commandnumber(a.commandnumber),top(a.top)
 	{
@@ -140,14 +140,14 @@ public:
 		top->haspointer=true;
 		return p;
 	}
-	void buffer::sndpstr(const std::string &p)
+	void sndpstr(const std::string &p)
 	{
 		int a=p.length();
 		*this << a;
 		sndnchar(p.c_str(), a);
 	}
 private:
-	void buffer::sndnchar(const char *p, int a)
+	void sndnchar(const char *p, int a)
 	{
 		for(int b=0;b<a;b++)*this << p[b];
 		return;

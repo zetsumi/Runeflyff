@@ -74,7 +74,7 @@ public:
 	{
 		g->call();
 	}
-	long long gettime()
+	long long gettime() const
 	{
 		return t;
 	}

@@ -6,7 +6,7 @@
 #include "stringf.h"
 #include "spawns.h"
 
-character_item::character_item(item &t, cluster *c, int m, float x1, float y1, float z1, void *o, spawner *sw1, void *o2)
+character_item::character_item(item t, cluster *c, int m, float x1, float y1, float z1, void *o, spawner *sw1, void *o2)
 	:targy(t),owner(o),owner2(o2),sw(sw1),ir(0)
 {
 	type=ttitem;
@@ -165,7 +165,7 @@ bool character_base::domove()
 	if(!moverremover.isset())return true;
 	if((cl->ido-lastmove<=2)||(abletomove>0)||((movetype==2)&&(followed==0)))return false;
 	float t=(cl->ido-lastmove)/1000.0f;
-	lastmove=cl->ido; 
+	lastmove=cl->ido;
 	t*=speed;
 	lastpos=pos;
 
@@ -341,7 +341,7 @@ int character_base::getdir(const vector3d<> &v2)
 	vector3d<> v=v2/v2.length();
 	float f;
 	f=acos(-v.z)*(180.0f/3.1415f);
-	
+
 	return (int)(f*10);
 }
 

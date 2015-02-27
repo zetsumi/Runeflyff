@@ -1,0 +1,18 @@
+#pragma once
+
+#cmakedefine MSVC_BUILD
+
+// For Visual Studio 2010 and older, templates use typedef. Newer ones might use the proper typename, I don't know
+#ifdef MSVC_BUILD
+	#define templateTypedef
+#else
+	#define templateTypedef typename
+#endif	
+
+// MinGW / GCC / Clang do not have *_s functions defined
+#ifndef MSVC_BUILD
+	#include <cstdio>
+	
+	#define sprintf_s(buffer, len, str, ...) snprintf(buffer, len, str, __VA_ARGS__)
+	#define sscanf_s(buffer, str, ...) sscanf(buffer, str, __VA_ARGS__)
+#endif

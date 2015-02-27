@@ -43,7 +43,7 @@ class s_sender
 	pmutex mutex;
 public:
 	s_sender();
-	int s_sender::send(SOCKET s, const char *buf, int len, int flags)
+	int send(SOCKET s, const char *buf, int len, int flags)
 	{
 		int r=::send(s, buf, len, flags);
 		if(r>0)

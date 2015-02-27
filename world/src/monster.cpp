@@ -220,7 +220,7 @@ bool character_mob::act()
 //			drop();
 			actstate=msdropped;
 //		break;
-	case msdropped:		
+	case msdropped:
 			if(/*(cl->ido>kotime)&&*/((endval>=2)||(!agro)))
 			{
 				rv=true;
@@ -307,7 +307,7 @@ bool character_mob::mobattack()
 					bs.cmd(id, 0x5f) << pos.x << pos.y << pos.z << 0 << 0 << 0;
 					multicast(bs);
 					attacker(this, target);//attack(0x1d);
-				}else 
+				}else
 				{
 					setfollowed(target, md);
 					movefollow();
@@ -325,7 +325,7 @@ bool character_mob::mobattack()
 					act();
 				}
 
-			}else 
+			}else
 			{
 				setfollowed(target, md);
 				movefollow();
@@ -342,7 +342,7 @@ bool character_mob::mobattack()
 	return (actstate!=msattack);
 }
 
-void character_mob::dropitem(item &targy, vector3d<> &p, tplayer *k, bool i)
+void character_mob::dropitem(item &targy, vector3d<> p, tplayer *k, bool i)
 {
 	if((!targy.valid())||(targy.getId()==15))return;
 	tparty *ppt=0;
@@ -417,8 +417,8 @@ void character_mob::drop(character_buffable *koer, bool fc, bool gb)
 				{
 					targy.upgrade=0;
 					targy.num=i->nmin+rnd(i->nmax-i->nmin);
-						
-					//check for the item+ 
+
+					//check for the item+
 					int seed = 10000;
 					int modif = 1;
 					if(fc)modif = 2;

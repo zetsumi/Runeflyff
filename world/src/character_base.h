@@ -303,7 +303,7 @@ public:
 	{
 		return spawntime;
 	}
-	character_item(item &t, cluster *c, int m, float x1, float y1, float z1, void *owner=0, spawner *sw=0, void* owner2=0);
+	character_item(item t, cluster *c, int m, float x1, float y1, float z1, void *owner=0, spawner *sw=0, void* owner2=0);
 	virtual ~character_item()
 	{
 		removethis();

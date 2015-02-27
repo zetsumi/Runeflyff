@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include "error.h"
+#include <stdexcept>
 
 #include "logger.h"
 

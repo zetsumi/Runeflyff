@@ -3,8 +3,9 @@
 
 #include <string>
 #include "stringf.h"
+#include <stdexcept>
 
-class error:public std::exception
+class error : public std::exception
 {
 	std::string ab;
 public:
@@ -20,9 +21,13 @@ public:
 	{
 		if(this!=&e)ab=e.ab;
 	}
-	const char *what() const
+
+	virtual const char* what() const throw()
 	{
 		return ab.c_str();
+	}
+
+	virtual ~error() throw() {
 	}
 };
 

@@ -2,6 +2,8 @@
 #include "stringf.h"
 
 #include <stdio.h>
+#include <config.h>
+
 char ptable[]="0123456789ABCDEF";
 
 

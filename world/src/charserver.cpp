@@ -6,6 +6,7 @@
 #include "inventory.h"
 #include "item.h"
 #include "cluster.h"
+#include "player.h"
 
 #define ID_DCUSER 0xf03103ff
 #define ID_NOGG	  0xf03103fe
@@ -232,7 +233,7 @@ void charserver::getchars(int client, char *puffer, int n)
 {
 	int a;
 	int c=0;
-	
+
 	while(c<n){
 		a=recv(client, &puffer[c], n-c, 0);
 		if(a<0){perror("recv()");return;}
@@ -282,9 +283,9 @@ int charserver::connecttologinserver(char* loginserverName, int loginserverPort)
 		logger.log("Can't connect to login server!\n");
 		return -1;
 	}
-	
+
 	getchars(loginserverSocket,puffer,13);
-	
+
 	sendablebuffer bs;
 	bs << (char)0x5e << 16 << 12;
 	bs << 0 << (int)ID_NOGG << 0;
@@ -362,12 +363,12 @@ void charserver::doselect()
 		mplayers.push_back(newconnection);
 	}
 //	if(!mplayers.empty())logger.log(".");
-	
+
 	for(i=recvmark.begin();i!=recvmark.end();++i)
 	{
 
 		if(!(*i)->errorstate)
-		{ 
+		{
 			a=(*i)->sr.recieve();
 			if(a==3)(*i)->process();
 			else if((a==1)||(a==2))
@@ -583,7 +584,7 @@ void charserver::tplayer::sendcharinfo()
 				i+=item::itemdatasize*inventory::eqoff;
 				b=toInt(s1["length(inventory)"]);
 				b/=item::itemdatasize;
-				
+
 				for(a=inventory::eqoff;a<b;a++)
 				{
 					if((*((int*)i))>0)neq++;
@@ -616,7 +617,7 @@ void charserver::tplayer::sendcharinfo()
 		}
 		raise();
 	}
-	
+
 }
 
 void charserver::tplayer::chardel()
@@ -688,7 +689,7 @@ void charserver::tplayer::createchar()
 
 	sr.getpstr(t, 1024);
 	charname=t;
-	
+
 	{
 		int b=charname.length();
 		for(a=0;a<b;a++)
@@ -808,7 +809,7 @@ void charserver::tplayer::createchar()
 	s1.addeupdate("quests", (char*)&a, 4);
 	s1.addeupdate("finishedquests", (char*)&a, 4);
 	char *friends=new char[::tplayer::maxfriends*8];
-	for(a=0;a<::tplayer::maxfriends*8;a+=8)
+	for(a=0; a< ::tplayer::maxfriends*8; a+=8)
 	{
 		*(int*)(&friends[a])=-1;
 		*(int*)(&friends[a+4])=-1;
@@ -816,7 +817,7 @@ void charserver::tplayer::createchar()
 	s1.addeupdate("friendlist", friends, ::tplayer::maxfriends*8);
 	delete[] friends;
 
-	
+
 	char *slots=new char[3*4*(5+24+4)];
 	for(a=0;a<3*4*(5+24+4);a++)slots[a]=0;
 

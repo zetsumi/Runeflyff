@@ -23,7 +23,8 @@ public:
 				bs.cmd(owner->getId(), 0x7e) << (char)1;
 				owner->gridcell.multicast2(bs);
 				t=owner->cl->ido+10000;
-				owner->cl->addobjtimer(objtimercont(this));
+				objtimercont tc(this);
+				owner->cl->addobjtimer(tc);
 		}
 	}
 	void operator()(character_obj *o, tplayer *p)
@@ -126,7 +127,8 @@ public:
 		new character_item(targy, o->cl, o->getmapid(), o->getx(), o->gety(), o->getz(), p);
 		opened=true;
 		t=owner->cl->ido+5000;
-		owner->cl->addobjtimer(objtimercont(this));
+		objtimercont tc(this);
+		owner->cl->addobjtimer(tc);
 	}
 	void timer()
 	{
@@ -165,7 +167,8 @@ public:
 		owner=o;
 //		owner->setmodeltype(0);
 		t=owner->cl->ido+5000;
-		owner->cl->addobjtimer(objtimercont(this));
+		objtimercont tc(this);
+		owner->cl->addobjtimer(tc);
 	}
 	void operator()(character_obj *o, tplayer *p)
 	{
@@ -216,7 +219,8 @@ public:
 
 		opened=true;
 		t=owner->cl->ido+5000;
-		owner->cl->addobjtimer(objtimercont(this));
+		objtimercont tc(this);
+		owner->cl->addobjtimer(tc);
 	}
 	void timer()
 	{
@@ -247,7 +251,8 @@ public:
 
 			opened=true;
 			t=owner->cl->ido+5000;
-			owner->cl->addobjtimer(objtimercont(this));
+			objtimercont tc(this);
+			owner->cl->addobjtimer(tc);
 		}
 	}
 	void timer()

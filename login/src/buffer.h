@@ -56,7 +56,7 @@ public:
 	tplayer *forbidden;
 	buffer():len(0),commandnumber(0),forbidden(0),top(0){};
 
-	buffer::buffer(const buffer& a)
+	buffer(const buffer& a)
 	:forbidden(a.forbidden),len(a.len),
 	commandnumber(a.commandnumber),top(a.top)
 	{
@@ -144,7 +144,7 @@ public:
 		top->pos+=sizeof(T);
 		return p;
 	}
-	void buffer::sndpstr(const char *p)
+	void sndpstr(const char *p)
 	{
 		int a;
 		for(a=0;p[a]!=0;a++);
@@ -152,7 +152,7 @@ public:
 		sndnchar(p, a);
 	}
 
-	void buffer::sndnchar(const char *p, int a)
+	void sndnchar(const char *p, int a)
 	{
 		int d=0;
 		checknRaise(8);/*1*/

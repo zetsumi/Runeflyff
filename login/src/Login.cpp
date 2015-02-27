@@ -16,7 +16,7 @@
 #include "PacketLogger.h"
 
 PacketLogger packetLoggerText("login_packetLog.txt", PacketLogger::TEXT);
-PacketLogger packetLoggerBin("login_packetLog.bin",  PacketLogger::BINARY);
+PacketLogger packetLoggerBin( "login_packetLog.bin", PacketLogger::BINARY);
 
 int tv=20000;	//20 sec
 
@@ -57,7 +57,7 @@ char mysqlhost[257];
 char mysqluser[257];
 char mysqlpasswd[257];
 char mysqldb[257];
-int mysqlport=0; 
+int mysqlport=0;
 MYSQL *connection=0;
 MYSQL *connection3=0;
 char dateval[257];
@@ -292,7 +292,7 @@ public:
 //					if(s2.next())
 //					{
 //						b=toInt(s2[0]);
-//					}	
+//					}
 //					s2.freeup();
 				}else n=41;
 				logger.log("CurrentPlayers=%d MaxPlayer=%d\n", b, n);
@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
 	server.sin_addr.s_addr = INADDR_ANY;
 
 #ifndef __linux__
-	if (WSAStartup(2*256+2, &wsaData)<0) {
+	if (WSAStartup(MAKEWORD(2,2), &wsaData)<0) {
 		printf("Winsock hiba\n");
 		exit(1);
 	}
