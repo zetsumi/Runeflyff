@@ -15,7 +15,7 @@
 //#define ConnectToLogin
 
 int loginserverPort=23000;
-char *loginserverName="127.0.0.1";
+const std::string& loginserverName="127.0.0.1";
 
 void* charserverthread(void *t)
 {

@@ -82,12 +82,32 @@ void printft()
 void itemidsearch(tplayer &player, const char *p);
 void mobidsearch(tplayer &player, const char *p);
 
+bool sc(const std::string& str1, const std::string& str2) {
+    if(str1.c_str() == NULL && str2.c_str() == NULL) {
+        return true;
+    }
+    else {
+        if(str1.length() != str2.length()) {
+            return false;
+        }
+        else {
+            for (int x = 0; x < str1.length(); x++) {
+                if(str1[x] != str2[x]) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+/*
 bool sc(const char *t, char *r)
 {
 	for(;(*r!=0)&&(*t!=0);r++,t++)if(*t!=*r)return false;
 	return (*r==0);
 }
-
+*/
 
 void tplayer::process()
 {
@@ -282,7 +302,7 @@ void t_attack3(tplayer *p)
 	{
 		p->canceldelayed();
 		if(p->isMoveing()>1)
-		{	
+		{
 			p->domove();
 			p->stopmove();
 		}
@@ -302,7 +322,7 @@ void t_attack3(tplayer *p)
 			if(p->di&&!p->gm_di)p->removebuff(193);
 			p->attack(b, a);
 		}//else p->greentext("Equip arrows first!");
-	}else 
+	}else
 	{
 		if(p->di&&!p->gm_di)p->removebuff(193);
 		p->attack(b, a);
@@ -322,7 +342,7 @@ void t_attack2(tplayer *p)
 	{
 		p->canceldelayed();
 		if(p->isMoveing()>1)
-		{	
+		{
 			p->domove();
 			p->stopmove();
 		}
@@ -351,7 +371,7 @@ void t_attack(tplayer *p)
 	{
 		p->canceldelayed();
 		if(p->isMoveing()>1)
-		{	
+		{
 			p->domove();
 			p->stopmove();
 		}
@@ -542,7 +562,7 @@ void t_marklodeligth(tplayer *p)
 			p->lodelight=b;
 		}
 	}
-	
+
 }
 
 void t_statset(tplayer *p)
@@ -718,7 +738,7 @@ void t_piercing1(tplayer *p)
 						p->inv.removeitem(b,1);
 						p->money-=80000+e*40000;
 						setstat(p->bs, p->getId(), 79, p->money);
-					}else 
+					}else
 					{
 						p->bs->cmd(p->getId(), 0x94) << 1128;
 					}
@@ -732,11 +752,11 @@ void t_piercing2(tplayer *p)
 	int a,b,c,e;
 	p->sr->get(a);
 	p->sr->get(b);
-                       
+
 	if((p->inv.getItem(a)==0)||(p->inv.getItem(b)==0))return;
 	c=p->inv.getItem(b)->getId();
 	if((c>=2029)&&(c<=2033))c=c+8+rnd(9)*5;
-                       
+
 	for(e=0;e<5;e++)
 		if(p->inv.getItem(a)->slots[e]==0)
 		{
@@ -766,7 +786,7 @@ void t_guildlogo(tplayer *p)
 	{
 		p->sr->get(b);
 		p->guild->setlogo(b);
-	}			
+	}
 }
 
 void t_guildnotice(tplayer *p)
@@ -1311,7 +1331,7 @@ void t_fixmobplace(tplayer *p)
 //		vector3d<> v=f->getpos();
 //		if(f->type==character_base::ttmob)
 			p->bs->cmd(f->getId(), 0x5f) << f->getx() << f->gety() << f->getz() << 0 << 0 << 0;
-//		else 
+//		else
 //		{
 //			p->bs->cmd(f->getId(), 0x5f) << f->getx() << f->gety() << f->getz() << 0 << 0 << 0;
 //			if(f->isMoveing())gotoxyz(p->bs, f->getId(), f->getcel().x, f->getcel().y, f->getcel().z);
@@ -1327,7 +1347,7 @@ void t_duelagree(tplayer *p)
 		if(p->duelchallanger->duelchallanged==p->dbid)
 		p->duelcountdowntime=p->cl->ido+1000;
 		p->duelcountdown=3;
-	
+
 		p->duel=p->duelchallanger;
 		p->duel->duel=p;
 		p->duelbegan=false;
@@ -1344,7 +1364,7 @@ void t_duelask(tplayer *p)
 	if(a==p->dbid)
 	{
 		std::map<int, tplayer*>::iterator i;
-		
+
 		i=p->cl->dbidplayers.find(b);
 		if(i!=p->cl->dbidplayers.end())
 		{
@@ -1408,7 +1428,7 @@ void t_gwstatus(tplayer *p)
 	}
 	ul m=dbguildsiege_mutex.lock();
 	sqlquery &s1=dbguildsiege;
-	
+
 	s1.select("count(*)");
 	if(!s1.next())return;
 	int n=toInt(s1[0]);
@@ -1496,8 +1516,8 @@ void initprochandlers()
 	t_0000[0x0024]=t_markmail;
 	t_0000[0xff00]=t_loadingprocess;
 	t_0000[0x0f00]=t_obj_something;
-	
-	
+
+
 	t_00ff[0x0010]=t_attack;	//str
 	t_00ff[0x0011]=t_attack2;	//int
 	t_00ff[0x0012]=t_attack3;	//dex
@@ -1541,7 +1561,7 @@ void initprochandlers()
 	t_00ff[0x0018]=t_minimapping;
 	t_00ff[0x0ffd]=t_createcloack;
 
-	
+
 	t_f000[0xd008]=t_piercing1;
 	t_f000[0xb025]=t_piercing2;
 	t_f000[0xf114]=t_piercing2;
@@ -1984,7 +2004,7 @@ void tplayer::chatcommands(const char *t)
 		*bs << 1;
 		bs->sndpstr("kk");
 		*bs << 6;
-		
+
 	}else if(sc(&t[1], "teszt36 "))	//hp on the left
 	{
 		bs->cmd(-1, 0xb8) << (char)32;
@@ -2005,7 +2025,7 @@ void tplayer::chatcommands(const char *t)
 		*bs << 2;
 		*bs << 81 << 1 << 81 << 1;
 		*bs << 86 << 1 << 86 << 2;
-	
+
 	}else if(sc(&t[1], "teszt80 "))
 	{
 
@@ -2083,7 +2103,7 @@ void tplayer::chatcommands(const char *t)
 	{
 		a=cl->loadmobspawns();
 		logger.log("mobspawns\n", a);
-		
+
 	}else if(sc(&t[1], "search "))itemidsearch(*this, &t[8]);
 	else if(sc(&t[1], "searchmob "))mobidsearch(*this, &t[11]);
 	else if(sc(&t[1], "bank"))
@@ -2512,7 +2532,7 @@ void tplayer::chatcommands(const char *t)
 		sscanf_s(&t[7], "%d", &a);
 		modelid=a;
 		tomulticast->cmd(id, 0xf5) << a;
-		
+
 	}else if(sc(&t[1], "tp0 "))
 	{
 		sscanf_s(&t[5], "%x", &a);
@@ -2654,7 +2674,7 @@ void tplayer::chatcommands(const char *t)
 				*bs << (unsigned char)c;
 			}
 		}
-		
+
 	}else if(sc(&t[1], "tw "))
 	{
 		b=strlen(&t[4]);
@@ -2668,7 +2688,7 @@ void tplayer::chatcommands(const char *t)
 				*bs << (unsigned char)c;
 			}
 		}
-		
+
 	}else if(sc(&t[1], "teszt10 "))
 	{
 		a=0;
@@ -2767,7 +2787,7 @@ void tplayer::chatcommands(const char *t)
 		tomulticast->sndpstr(name);
 		*tomulticast << 0;
 //		greentext("teszt1");
-		
+
 	}else if(sc(&t[1], "teszt17 "))
 	{
 		sscanf_s(&t[9], "%d", &a);
@@ -2776,7 +2796,7 @@ void tplayer::chatcommands(const char *t)
 
 	}else if(sc(&t[1], "teszt18 "))
 	{
-		
+
 	}else if(sc(&t[1], "duelteszt1"))
 	{
 		tplayer *p;
@@ -3278,7 +3298,7 @@ if(!flying)
 
 	}
 }
-	
+
 }
 void tplayer::psetfocus()
 {
@@ -3600,7 +3620,7 @@ void tplayer::flyturn06()
 		setandcheckpos(fx,fy,fz);
 		movein(vector3d<>(fx2*10, fy2*10, fz2*10));
 	}
-	
+
 	bs2.cmd(id, 0xc9);
 	bs2 << fx << fy << fz << fx2 << fy2 << fz2;
 	bs2 << d << vert1 << sp << n1 << state << state2;
@@ -3676,7 +3696,7 @@ void tplayer::fly()
 		setandcheckpos(fx,fy,fz);
 		movein(vector3d<>(fx2*10, fy2*10, fz2*10));
 	}
-	
+
 	bs2.cmd(id, 0xcc);
 	bs2 << fx << fy << fz << fx2 << fy2 << fz2;
 	bs2 << d << vert1 << sp << n1 << state << state2;
@@ -3803,7 +3823,7 @@ tupgradeval eupgrade(int e, item *t)
 	tupgradeval retval=NONE;
 	if((t->element==0)||(t->element==e))
 	{
-		
+
 		t->element=e;
 		if(t->eupgrade>=10)retval=NONE;
 		else{
@@ -3886,12 +3906,12 @@ void tplayer::upgradeitem()
 //						if(t->upgrade<0)t->upgrade=0;
 					}
 					if((t->upgrade>=6)&&(t->slots[t->upgrade-6]==65535))t->slots[t->upgrade-6]=0;
-				}else 
+				}else
 				{
 					found=NONE;
 				}
 				break;
-				
+
 			case 2083:		//event moonstone
 			case 2036:		//moonstone
 				switch(t->getId())
@@ -3923,7 +3943,7 @@ void tplayer::upgradeitem()
 					found=NONE;
 				}
 				break;
-			
+
 			case 2082:    //event sunstone
 			case 2035:    //sunstone
 			case 3229:
@@ -4165,7 +4185,7 @@ void tplayer::blinkpool()
 			changemap(mapid,x,y,z);
 			incskillexp(15);  //blinkpool
 		}else this->cancelskill();
-	}else this->cancelskill();	
+	}else this->cancelskill();
 }
 
 void tplayer::psay(const char *puffer)
@@ -4180,7 +4200,7 @@ void tplayer::psay(const char *puffer)
     for(b=c;b<a;b++)puffer2[b-c]=puffer[b];
     puffer2[b-c]=0;
     while((puffer[a]==' ')||(puffer[a]==34))a++;
-	
+
 	tplayer *p=0;
 	bool found;
 	int dbid1=-1;
@@ -4262,7 +4282,7 @@ void tplayer::addfriendbyid()
 
 		i=cl->dbidplayers.find(a);
 		if(i==cl->dbidplayers.end())return;
-		
+
 		ul mm=i->second->asyncbuffermutex.lock();
 		for(d=0;d<fs;d++)
 		{
@@ -4437,7 +4457,7 @@ void tplayer::tradeagree()
 		}
 
 		(*p->bs) << (unsigned char)b;
-        
+
 		for(b=0;b<73;b++)
 			if(inv.getItem(b)!=0)
 				if(inv.getItem(b)->getId()!=-1)
@@ -4475,7 +4495,7 @@ void tplayer::tradeagree()
 		trade=new tradeclass(this, p, id, p->getId());
 		p->trade=trade;
 	}
-	
+
 }
 
 void tplayer::openshop()
@@ -4519,10 +4539,10 @@ void tplayer::itemaddtoshop()
 		b=(unsigned char)sr->get1char();
 		sr->get(c);
 		sr->get(d);
-	
+
 		shop.additemtoshop(a, b,c,d);
-	
-		
+
+
 	}
 }
 
@@ -4625,7 +4645,7 @@ void tplayer::markmail()
 	if((trade!=0)||(shop.getopened()))return;
 	int a;
 	sr->get(a);
-	
+
 	cl->dbmails.addupdate("readed", "1");
 	cl->dbmails.update(string("recipient = " + toString(dbid) + " AND createdate = " + toString(a)));
 	cl->dbmails.clearupdate();
@@ -4695,7 +4715,7 @@ void tplayer::getmoneyfrommail()
 			cl->dbmails.clearupdate();
 		}
 	}else cl->dbmails.freeup();
-	
+
 
 }
 
@@ -4724,7 +4744,7 @@ void tplayer::sendmail()
 	int crd=(int)time(0);
 	item targy;
 	short b;
-	
+
 	a=(unsigned int)(unsigned char)sr->get1char();
 #ifdef _DEBUG
 #ifdef _LOGALOT
@@ -4762,8 +4782,8 @@ void tplayer::sendmail()
 			return;
 		}
 	}
-	
-	
+
+
 	if(money>penya+500)
 	{
 		cl->dbcharacters.selectw(string("name = '")+string(&cimzett[0])+string("'"), "id");
@@ -4778,7 +4798,7 @@ void tplayer::sendmail()
 			messagebox("Can't find recipient!");
 			return;
 		}
-		
+
 		cl->dbmails.addupdate("recipient", toString(rid));
 		cl->dbmails.addupdate("sender", toString(dbid));
 		cl->dbmails.addupdate("title", string(&title[0]));
@@ -4837,7 +4857,7 @@ void tplayer::partyleave()
 void tplayer::ppartyinvite(const std::string &pname)
 {
 	std::map<std::string, tplayer*>::iterator i;
-	
+
 	tplayer *p=0;
 	i=cl->nameplayers.find(pname);
 	if(i!=cl->nameplayers.end())p=i->second;
@@ -4855,8 +4875,8 @@ void tplayer::ppartyinvite(const std::string &pname)
 			*p->bs << p->id << p->level << p->job << (char)1;
 			p->bs->sndpstr(name);
 			*p->bs << 0;
-			
-		}else 
+
+		}else
 		{
 			bs->cmd(id, 0x95) << 647;
 			bs->sndpstr(p->name);
@@ -4871,7 +4891,7 @@ void tplayer::partyinvite()
 	int a,b;
 	sr->get(a);	//dbid!
 	sr->get(b);	//dbid!
-	
+
 	tplayer *p=0;
 	i=cl->dbidplayers.find(b);
 	if(i!=cl->dbidplayers.end())p=i->second;
@@ -4889,8 +4909,8 @@ void tplayer::partyinvite()
 			*p->bs << p->id << p->level << p->job << (char)1;
 			p->bs->sndpstr(name);
 			*p->bs << 0;
-			
-		}else 
+
+		}else
 		{
 			bs->cmd(id, 0x95) << 647;
 			bs->sndpstr(p->name);
