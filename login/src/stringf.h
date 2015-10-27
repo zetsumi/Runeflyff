@@ -2,13 +2,14 @@
 #define __stringf_h__
 
 #include <string>
+#include <ctype.h>
 
-std::string toHex(unsigned int a);
-std::string toHex(unsigned long long a);
-std::string toString(unsigned long long a);
-std::string toString(long long a);
+std::string toHex(uint32_t a);
+std::string toHex(uint64_t a);
+std::string toString(uint64_t a);
+std::string toString(int32_t a);
+std::string toString(int64_t a);
 std::string operator+(const char *s, const std::string& s2);
-std::string toString(int a);
 std::string toString(float a);
 int toInt(std::string str);
 float toFloat(std::string str);

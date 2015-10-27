@@ -22,7 +22,7 @@ unsigned long long toUnsignedLongLong(const std::string &str)
 	return r;
 }
 
-std::string toHex(unsigned int a)
+std::string toHex(uint32_t a)
 {
 	std::string str;
 	char p[10];
@@ -36,7 +36,7 @@ std::string toHex(unsigned int a)
 	return str;
 }
 
-std::string toHex(unsigned long long a)
+std::string toHex(uint64_t a)
 {
 	std::string str;
 	char p[20];
@@ -52,7 +52,7 @@ std::string toHex(unsigned long long a)
 	return str;
 }
 
-std::string toString(unsigned long long a)
+std::string toString(uint64_t a)
 {
 	std::string str;
 	char p[22];
@@ -67,7 +67,7 @@ std::string toString(unsigned long long a)
 	return str;
 }
 
-std::string toString(long long a)
+std::string toString(int64_t a)
 {
 	std::string str;
 	char p[22];
@@ -92,14 +92,14 @@ std::string operator+(const char *s, const std::string& s2)
 }
 
 
-std::string toString(int a)
+std::string toString(int32_t a)
 {
 	char puffer[24];
 	sprintf_s(&puffer[0], 24, "%d", a);
 	return std::string(&puffer[0]);
 }
 
-std::string toString(unsigned int a)
+std::string toString(uint32_t a)
 {
 	char puffer[24];
 	sprintf_s(&puffer[0], 24, "%u", a);

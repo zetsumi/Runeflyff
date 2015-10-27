@@ -19,9 +19,10 @@
 
 tlogger logger("", "logger_login.dat");
 
-tlogger::tlogger(char *pf, char *fname):f1(0),nerrors(0),prefix(pf)
+tlogger::tlogger(const std::string& prefix, const std::string& fname):f1(0),nerrors(0),prefix(prefix)
 {
-	if(fname!=0)f1=fopen(fname, "w+b");
+	if(fname.c_str() != NULL)
+        f1=fopen(fname.c_str(), "w+b");
 }
 
 tlogger::~tlogger()

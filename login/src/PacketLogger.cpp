@@ -1,11 +1,11 @@
 #include "PacketLogger.h"
 
-PacketLogger::PacketLogger(char* filename, LogMode mode) : mode(mode)
+PacketLogger::PacketLogger(const std::string& filename, LogMode mode) : mode(mode)
 {
 	if(mode == BINARY)
-		fh = fopen(filename, "wb");
+		fh = fopen(filename.c_str(), "wb");
 	else
-		fh = fopen(filename, "w");
+		fh = fopen(filename.c_str(), "w");
 }
 
 PacketLogger::~PacketLogger(void)

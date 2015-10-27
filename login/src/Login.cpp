@@ -311,15 +311,15 @@ public:
 
 std::list<tuser> users;
 
-int loadsqlserverip(char *filename)
+int loadsqlserverip(const std::string& filename)
 {
     ifstream f1;
 
 	char puffer[257];
 	int a;
-	f1.open(filename);
+	f1.open(filename.c_str());
 	if(f1.fail()){
-		printf("error opening %s!\n", filename);
+		printf("error opening %s!\n", filename.c_str());
 		exit(1);
 	}
 	else

@@ -15,7 +15,7 @@ class tlogger
 	FILE *f1;
 	std::string prefix;
 public:
-	tlogger(char *pf, char *fname=0);
+	tlogger(const std::string& prefix, const std::string& fname = NULL);
 	~tlogger();
 	void log(const char *s, ...);
 	void elog(const char *s, ...);

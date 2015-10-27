@@ -14,9 +14,10 @@ tlogger logger("", "logger.dat");
 
 tlogger sqllogger("", "queries.dat", false);
 
-tlogger::tlogger(char *pf, char *fname, bool onscreen):f1(0),nerrors(0),prefix(pf), os(onscreen)
+tlogger::tlogger(const std::string& prefix, const std::string& fname, bool onscreen):f1(0),nerrors(0),prefix(prefix), os(onscreen)
 {
-	if(fname!=0)f1=fopen(fname, "a+b");
+	if(fname.c_str() != NULL)
+        f1=fopen(fname.c_str(), "a+b");
 }
 
 tlogger::~tlogger()

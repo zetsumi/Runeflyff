@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <string>
 
 class PacketLogger
 {
@@ -11,7 +12,7 @@ public:
 		TEXT
 	};
 
-	PacketLogger(char* filename, LogMode mode);
+	PacketLogger(const std::string& filename, LogMode mode);
 	virtual ~PacketLogger(void);
 
 	void logPacket(char *packet, int len = 0);

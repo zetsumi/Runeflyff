@@ -16,7 +16,7 @@ class tlogger
 	std::string prefix;
 	bool os;
 public:
-	tlogger(char *pf, char *fname=0, bool onscreen=true);
+	tlogger(const std::string& prefix, const std::string& fname = NULL, bool onscreen=true);
 	~tlogger();
 	void log(const char *s, ...);
 	void elog(const char *s, ...);

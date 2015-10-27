@@ -17,8 +17,8 @@ IF(WIN32)
 ENDIF()
 
 CONFIGURE_FILE(
-	"${PROJECT_SOURCE_DIR}/../include/config.h.in"
-	"${PROJECT_BINARY_DIR}/config.h"
+	"${PROJECT_SOURCE_DIR}/../include/config.h.in" 
+		"${PROJECT_BINARY_DIR}/config.h"
 )
 
 INCLUDE_DIRECTORIES(src)
