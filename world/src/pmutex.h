@@ -1,7 +1,14 @@
 #ifndef __pmutex_h__
 #define __pmutex_h__
 
-#include <pthread.h>
+#ifdef MSVC_BUILD
+    #include <msvc/pthread.h>
+#else
+    #include <pthread.h>
+    #include <cstring>
+    #include <ctime>
+#endif
+
 class pmutex
 {
 	pthread_mutex_t mutex;

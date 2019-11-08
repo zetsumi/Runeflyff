@@ -192,7 +192,7 @@ extern int my_sigwait(const sigset_t *set,int *sig);
 #undef sigwait
 #endif
 #undef _REENTRANT			/* Fix if _REENTRANT is in pthread.h */
-#include <pthread.h>
+#include <msvc/pthread.h>
 #ifndef _REENTRANT
 #define _REENTRANT
 #endif
