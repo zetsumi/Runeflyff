@@ -57,14 +57,19 @@ ELSE()
     MESSAGE(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 ENDIF()
 
-#SET(QT5_MIN_VERSION 5.10)
-#SET(Qt5_DIR "E:/CppLibs/QT/5.13.2/5.13.2/mingw73_32/lib/cmake/Qt5")
+if( MINGW )
+    get_filename_component( Mingw_Path ${CMAKE_CXX_COMPILER} PATH )
+    set( CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Mingw_Path}/libgcc_s_dw2-1.dll ${Mingw_Path}/libstdc++-6.dll )
+endif( MINGW )
+
+SET(QT5_MIN_VERSION 5.10)
+SET(Qt5_DIR "E:/CppLibs/QT/5.13.2/5.13.2/mingw73_32/lib/cmake/Qt5")
 
 # QT 5.x dependencies
-#FIND_PACKAGE(Qt5 ${QT5_MIN_VERSION} REQUIRED COMPONENTS
-#        Core)
+FIND_PACKAGE(Qt5 ${QT5_MIN_VERSION} REQUIRED COMPONENTS
+        Core)
 
-#GET_TARGET_PROPERTY(QtCore_Location Qt5::Core LOCATION_${CMAKE_BUILD_TYPE})
+GET_TARGET_PROPERTY(QtCore_Location Qt5::Core LOCATION_${CMAKE_BUILD_TYPE})
 
 ADD_SUBDIRECTORY(login)
 ADD_SUBDIRECTORY(world)

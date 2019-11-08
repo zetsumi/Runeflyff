@@ -13,6 +13,8 @@
 #include <list>
 #include <conio.h>
 
+#include <QtCore/QCoreApplication.h>
+
 #include "PacketLogger.h"
 
 PacketLogger packetLoggerText("login_packetLog.txt", PacketLogger::TEXT);
@@ -340,6 +342,8 @@ int loadsqlserverip(const std::string& filename)
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication qtApp (argc, argv);
+
 	int serverid=loadsqlserverip("server.txt");
 #ifndef __linux__
 	WSAData wsaData;
@@ -438,5 +442,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    return EXIT_SUCCESS;
+    return QCoreApplication::exec();
 }
