@@ -2,6 +2,8 @@
 
 #cmakedefine MSVC_BUILD
 
+#cmakedefine MYSQL_SUPPORT
+
 // For Visual Studio 2010 and older, templates use typedef. Newer ones might use the proper typename, I don't know
 #ifdef MSVC_BUILD
 	#define templateTypedef

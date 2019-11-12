@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
-#include "mysql.h"
 #include "network.h"
 #include "buffer.h"
 #include "reciever.h"
@@ -13,7 +12,12 @@
 #include <list>
 #include <conio.h>
 
-#include <QtCore/QCoreApplication.h>
+#include <QtCore/QCoreApplication>
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlError>
+#include <QtSql/QSqlQuery>
+#include <QtSql/QSqlQueryModel>
+#include <QtSql/QSqlRecord>
 
 #include "PacketLogger.h"
 
@@ -60,22 +64,8 @@ char mysqluser[257];
 char mysqlpasswd[257];
 char mysqldb[257];
 int mysqlport=0;
-MYSQL *connection=0;
-MYSQL *connection3=0;
+QSqlDatabase sqlDatabase;
 char dateval[257];
-
-//pmutex reconnectmutex;
-void reconnectsql(MYSQL **con)
-{
-//	ul m=reconnectmutex.lock();
-	mysql_close(*con);
-	*con=mysql_init(0);
-	if(!mysql_real_connect(*con, mysqlhost, mysqluser, mysqlpasswd, mysqldb, mysqlport, (char*)0, 0))
-		logger.log("Mysql reconnect error: %s\n", mysql_error(*con));
-	else
-		printf("Reconnecting to MySql!\n");
-}
-
 
 class tuser
 {
@@ -86,7 +76,7 @@ class tuser
 public:
     int s1;
     int sck;
-    std::string ip,name, passwd;
+    std::string ip,name;
 	long long timeout;
     buffer *bs;
     reciever sr;
@@ -173,11 +163,8 @@ public:
 				break;
 				}
 	        }
-		}catch(error &e)
-		{
-			printf("Error: %s", e.what());
-			errorstate=true;
-		}catch(std::exception &e)
+		}
+		catch(std::exception &e)
 		{
 			printf("Exception %s", e.what());
 			errorstate=true;
@@ -216,98 +203,81 @@ public:
 		sr.getpstr(puffer, 128);
 		name=puffer;
 		sr.getpstr(puffer, 128);
-		{
-			sqlquery s1(&connection, "accounts");
-			s1.selectw("name='"+name+"'", "passwd");
-			if(s1.next())
-			{
-				passwd=s1[0];
-			}else
-			{
-				s1.freeup();
-//				errorstate=true;
-				*bs << 0xfe << 0x79;
-				bs->inc();
 
-				return;
-			}
-			s1.freeup();
-		}
+        QSqlQuery passwdLookup("SELECT passwd FROM accounts WHERE name = :name", sqlDatabase);
+        passwdLookup.bindValue(":name", name.c_str());
+        passwdLookup.exec();
 
-		if(passwd!=std::string(puffer))
+        const QString dbPasswd = passwdLookup.record().value(0).toString().trimmed();
+
+        if (dbPasswd.isNull() || dbPasswd.isEmpty()) {
+            *bs << 0xfe << 0x79;
+            bs->inc();
+            return;
+        }
+
+		if(dbPasswd.toStdString() != std::string(puffer))
 		{
 			*bs << 0xfe << 0x78;
 			bs->inc();
 			return;
 		}
 
-		int nserversnc=0;
-		int nservers=0;
+		QSqlQuery onlineClustersQuery("SELECT * FROM clusters WHERE up > :uptime OR cid = 0", sqlDatabase);
+		onlineClustersQuery.bindValue(":uptime", t);
+		onlineClustersQuery.setForwardOnly(true);
 
-		{
-			sqlquery s1(&connection, "clusters");
-			s1.selectw("up>"+toString(t) + " OR cid=0", "count(*)");
-			if(s1.next())
-			{
-				nservers=toInt(s1[0]);
-			}
-			s1.freeup();
+		QSqlQueryModel onlineClustersModel;
+		onlineClustersModel.setQuery(onlineClustersQuery);
 
-			s1.selectw("cid=0", "count(*)");
-			if(s1.next())
-			{
-				nserversnc=toInt(s1[0]);
-			}
-			s1.freeup();
-		}
+		QSqlQuery allClustersQuery("SELECT COUNT(*) FROM clusters WHERE cid = 0", sqlDatabase);
+		allClustersQuery.exec();
 
-		if(nservers-nserversnc<=0)
-		{
-			*bs << 0xfe << 0x6d;
-			bs->inc();
-			return;
-		}
+		const int nservers = onlineClustersModel.rowCount();
+        const int nserversnc = allClustersQuery.value(0).toInt();
+
+        if(nservers-nserversnc<=0)
+        {
+            *bs << 0xfe << 0x6d;
+            bs->inc();
+            return;
+        }
 
         *bs << 0xfd << 0x5d7f1f5c << (char)1;
-//        bs->sndpstr(username);
         *bs << nservers;
 
-		sqlquery s1(&connection, "clusters");
-		sqlquery s2(&connection3, "characters");
-		s1.selectw("up>"+toString(t) + " OR cid=0");
-		while(s1.next())
-		{
-			int a=toInt(s1["cid"]);
-			if(a==0)
-			{
-				*bs << -1 << toInt(s1["sid"]);
-				bs->sndpstr(s1["name"].c_str());
-				bs->sndpstr(s1["ip"].c_str());
-                *bs << 0 << 0 << 1 << 0;
-			}else
-			{
-				b=0;
-				int n=toInt(s1["maxplayers"]);
-				if(n>0)
-				{
-//					s2.selectw("clusterid = " + toString(a-1) + " AND loggedin = 1", "count(*)");
-//					if(s2.next())
-//					{
-//						b=toInt(s2[0]);
-//					}
-//					s2.freeup();
-				}else n=41;
-				logger.log("CurrentPlayers=%d MaxPlayer=%d\n", b, n);
-                *bs << toInt(s1["sid"]) << a;
-                bs->sndpstr(s1["name"].c_str());
-			    *bs << 0 << 1 << b << 1 << n;
-			}
+		for (auto i = 0; i < onlineClustersModel.rowCount(); i++) {
+		    const auto clusterId = onlineClustersModel.record(i).value("cid").toInt();
+            const auto serverId = onlineClustersModel.record(i).value("sid").toInt();
+            const auto clusterName = onlineClustersModel.record(i).value("name").toString();
 
+		    if (clusterId == 0) {
+                const auto clusterIp = onlineClustersModel.record(i).value("ip").toString();
+
+                *bs << -1 << serverId;
+                bs->sndpstr(clusterName.toStdString().c_str());
+                bs->sndpstr(clusterIp.toStdString().c_str());
+                *bs << 0 << 0 << 1 << 0;
+		    }
+		    else {
+                int playersOnCluster = 0;
+                int maxPlayers = onlineClustersModel.record(i).value("maxplayers").toInt();
+                if(maxPlayers > 0)
+                {
+                    // fixme: Get count of active players on the cluster
+                }
+                else {
+                    maxPlayers = 41;
+                }
+                logger.log("CurrentPlayers=%d MaxPlayer=%d\n", playersOnCluster, maxPlayers);
+                *bs << serverId << clusterId;
+                bs->sndpstr(clusterName.toStdString().c_str());
+                *bs << 0 << 1 << playersOnCluster << 1 << maxPlayers;
+		    }
 		}
-		s1.freeup();
+
 		bs->inc();
 		timeout=GetTickCount()+tv;
-
     }
 };
 
@@ -368,28 +338,17 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 #endif
-	connection=mysql_init(0);
-	if(connection==0)
-    {
-		printf("mysql_init fail\n");
-		exit(1);
-	}
-	connection3=mysql_init(0);
-	if(connection3==0)
-    {
-		printf("mysql_init fail\n");
-		exit(1);
-	}
 
-	if(!mysql_real_connect(connection, mysqlhost, mysqluser, mysqlpasswd, mysqldb, mysqlport, (char*)0, 0))
-	    printf("error connecting to mysql database! %s\n", mysql_error(connection));
-	else
-		printf("INFO: Connected to Mysql(connection)!\n");
-	if(!mysql_real_connect(connection3, mysqlhost, mysqluser, mysqlpasswd, mysqldb, mysqlport, (char*)0, 0))
-	    printf("error connecting to mysql database! %s\n", mysql_error(connection3));
-		else
-		printf("INFO: Connected to Mysql(connection3)!\n");
+	sqlDatabase = QSqlDatabase::addDatabase("QMYSQL");
+	sqlDatabase.setHostName(mysqlhost);
+	sqlDatabase.setPort(mysqlport);
+	sqlDatabase.setUserName(mysqluser);
+	sqlDatabase.setPassword(mysqlpasswd);
+	sqlDatabase.setDatabaseName(mysqldb);
 
+	if(!sqlDatabase.open()) {
+        qFatal("[QT] error connecting to mysql database! %s\n", sqlDatabase.lastError().text().toStdString().c_str());
+	}
 
     int starttime=time(0);
     int serverSocket;

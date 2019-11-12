@@ -1,3 +1,9 @@
+---- 0.80.0 ------
+- Migrate project to the Qt5 framework
+- Move MySQL dependencies out of the project files
+- Require C++11 support to compile the project. As part of this, drop support for old compilers
+- Drop Windows XP / Vista support - you can probably still compile it, but exposing those platforms to the internet will get your machine wrecked.
+
 ---- 0.74.2.2 ----
 This version will build under MinGW 4.8.1 as well as Visual Studio. I was able to build it
 successfully using --std=c++11 as well.

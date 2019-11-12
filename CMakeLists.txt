@@ -5,6 +5,11 @@ PROJECT(Runeflyff)
 # Find includes in corresponding build directories
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# Include local modules
+LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-modules")
+
+message("cmake_module_path = ${CMAKE_MODULE_PATH}")
+
 # Instruct CMake to run moc automatically when needed.
 SET(CMAKE_AUTOMOC ON)
 
@@ -62,14 +67,29 @@ if( MINGW )
     set( CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Mingw_Path}/libgcc_s_dw2-1.dll ${Mingw_Path}/libstdc++-6.dll )
 endif( MINGW )
 
-SET(QT5_MIN_VERSION 5.10)
+SET(QT5_VERSION 5.10)
+
+# Override this at the command line with your path
 SET(Qt5_DIR "E:/CppLibs/QT/5.13.2/5.13.2/mingw73_32/lib/cmake/Qt5")
 
 # QT 5.x dependencies
-FIND_PACKAGE(Qt5 ${QT5_MIN_VERSION} REQUIRED COMPONENTS
-        Core)
+FIND_PACKAGE(Qt5 ${QT5_VERSION} REQUIRED COMPONENTS
+        Core
+        Sql)
 
 GET_TARGET_PROPERTY(QtCore_Location Qt5::Core LOCATION_${CMAKE_BUILD_TYPE})
+GET_TARGET_PROPERTY(QtSql_Location Qt5::Sql LOCATION_${CMAKE_BUILD_TYPE})
+
+SET(MYSQL_SUPPORT ON)
+
+IF (MYSQL_SUPPORT)
+    SET(MYSQL_VERSION 1.0)
+
+    SET(MySQL_DIR "C:\\Program Files (x86)\\MySQL\\MySQL Connector C 6.1")
+
+    FIND_PACKAGE(MySQL ${MYSQL_VERSION} REQUIRED)
+    INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIRS})
+ENDIF()
 
 ADD_SUBDIRECTORY(login)
 ADD_SUBDIRECTORY(world)

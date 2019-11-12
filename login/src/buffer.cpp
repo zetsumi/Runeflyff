@@ -1,7 +1,9 @@
 #include "buffer.h"
 
-#include "mysql.h"
-#include <list>
+#ifndef __linux__
+#include <winsock2.h>
+#endif
+
 using namespace std;
 
 void buffer::dump()

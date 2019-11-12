@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "cluster.h"
 #include <windows.h>
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include "logger.h"
 #include "error.h"
 #include "main.h"
@@ -613,6 +613,8 @@ void cluster::cmain()
 */
 				if(lastclupdate<ido)
 				{
+				    logger.log("Updating cluster %d:%d up time\n", servernumber, clusternumber+1);
+
 					lastclupdate=ido+60000;
 					a=0;
 					if(nmaxplayers*3/4<=dsplayers.size())a=1;
