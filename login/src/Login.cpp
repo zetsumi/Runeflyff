@@ -7,9 +7,9 @@
 #include "network.h"
 #include "buffer.h"
 #include "reciever.h"
-#include <time.h>
-#include <stdio.h>
-#include <string.h>
+#include <ctime.>
+#include <cstdio>
+#include <cstring>
 #include <list>
 #include <conio.h>
 

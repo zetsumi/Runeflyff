@@ -4,7 +4,7 @@
 #define __mysqlq1_h__
 
 #include <winsock2.h>
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include <map>
 #include <vector>
 #include <string>

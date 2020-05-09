@@ -15,14 +15,19 @@
 extern int cellsize;
 
 template <int o>
-int mod(int a)
+constexpr int mod(int a)
 {
-	int r=a%o;
-	if(r<0)r+=o;
-	return r;
+    return a % o < 0 ?
+           (a % o) + o :
+           (a % o);
 }
 
-int mod(int a, int o);
+constexpr int mod(int a, int o)
+{
+    return a % o < 0 ?
+           (a % o) + o :
+           (a % o);
+}
 
 
 class tplayer;

@@ -12,13 +12,6 @@
 
 int cellsize=64;
 
-inline int mod(int a, int o)
-{
-	int r=a%o;
-	if(r<0)r+=o;
-	return r;
-}
-
 
 int tgridcell::getmapid()
 {

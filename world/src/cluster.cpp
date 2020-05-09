@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "cluster.h"
 #include <windows.h>
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include "logger.h"
 #include "error.h"
 #include "main.h"

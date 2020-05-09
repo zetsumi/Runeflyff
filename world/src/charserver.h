@@ -21,7 +21,6 @@ class charserver
 	void senddcmsg(std::string &name);
 
 	charserver(const charserver& a){};
-	charserver& operator=(const charserver &a){};
 	mcon connection;
     pthread_t *cthread, *athread;
 	void cmain();

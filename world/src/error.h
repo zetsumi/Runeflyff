@@ -20,6 +20,7 @@ public:
 	error& operator=(const error& e)
 	{
 		if(this!=&e)ab=e.ab;
+		return *this;
 	}
 
 	virtual const char* what() const throw()

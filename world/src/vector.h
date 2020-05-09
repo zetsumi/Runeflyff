@@ -1,7 +1,7 @@
 #ifndef __vector_h__
 #define __vector_h__
 
-#include <math.h>
+#include <cmath>
 
 template < class T = float >
 class vector3d

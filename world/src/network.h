@@ -1,8 +1,6 @@
 #ifndef __network_h__
 #define __network_h__
 
-#include "pmutex.h"
-
 //#define use_s
 
 #ifndef WIN32
@@ -30,6 +28,8 @@
 	#endif
 #endif
 
+#include "pmutex.h"
+
 bool startserver(int *s, int port);
 void closeserver(int serverSocket);
 void closesck(int sck);
@@ -52,6 +52,7 @@ public:
 			all+=r;
 			curr+=r;
 		}
+		return r;
 	}
 	long long getcurrent()
 	{
@@ -80,6 +81,7 @@ public:
 			all+=r;
 			curr+=r;
 		}
+		return r;
 	}
 	long long getcurrent()
 	{
