@@ -19,7 +19,10 @@ public:
 	~error() throw() {};
 	error& operator=(const error& e)
 	{
-		if(this!=&e)ab=e.ab;
+		if(this!=&e) {
+		    ab=e.ab;
+		}
+		return *this;
 	}
 	const char *what() const throw()
 	{

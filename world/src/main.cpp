@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <config.h>
 #include <cstdlib>
 #include <iostream>
 #include <conio.h>
@@ -267,7 +268,7 @@ try{
 		if(sizeof(int)!=4)throw std::runtime_error("Int is not 4 bytes!");
 		if(sizeof(long long)!=8)throw std::runtime_error("Long long is not 8 bytes!");
 		if(sizeof(float)!=4)throw std::runtime_error("Float is not 4 bytes!");
-		logger.log("Rune 0.75\n");
+        logger.log("Runeflyff v%s - Login\n", RUNEFLYFF_VERSION);
 #ifdef WIN32
 		logger.log("Windows");
 #endif
@@ -370,7 +371,7 @@ try{
 			s1.selectw("sid="+toString(servernumber)+" AND cid=0");
 			if(s1.next())
 			{
-				sprintf_s(serverip, 256, "%s", s1["ip"].c_str());
+				snprintf(serverip, 256, "%s", s1["ip"].c_str());
 			}else
 			{
 				logger.log("Error: Couldn't load serverip from database!(set to localhost)");

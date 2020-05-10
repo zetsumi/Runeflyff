@@ -770,7 +770,7 @@ void character_npc::npcchat(tplayer *p, std::string &b, int c, int d, int e)
 		*p->bs << 0;
 	}else if(b.substr(0, 3)=="ND_")
 	{
-		sscanf_s(&b.c_str()[3], "%d", &a);
+		sscanf(&b.c_str()[3], "%d", &a);
 		tnpcdialog &nd=npcdialogs.at(a);
 		for(a2=0;a2<5;a2++)
 		{
@@ -783,7 +783,7 @@ void character_npc::npcchat(tplayer *p, std::string &b, int c, int d, int e)
 		}
 	}else if(b.substr(0, 4)=="QBY_")
 	{
-		sscanf_s(&b.c_str()[4], "%d %d", &a, &a2);
+		sscanf(&b.c_str()[4], "%d %d", &a, &a2);
 nextpart:
 		for(i=qbegin.begin();i!=qbegin.end();++i)
 		{
@@ -838,7 +838,7 @@ nextpart:
 		}
 	}else if(b.substr(0, 4)=="QBN_")
 	{
-		sscanf_s(&b.c_str()[4], "%d %d", &a, &a2);
+		sscanf(&b.c_str()[4], "%d %d", &a, &a2);
 		for(i=qbegin.begin();i!=qbegin.end();++i)
 		{
 			if(((*i)->questid==a)&&((*i)->beginstate==a2))
@@ -859,7 +859,7 @@ nextpart:
 		}
 	}else if(b.substr(0, 4)=="QSI_")
 	{
-		sscanf_s(&b.c_str()[4], "%d %d", &f, &a2);
+		sscanf(&b.c_str()[4], "%d %d", &f, &a2);
 		for(i=qbegin.begin();i!=qbegin.end();++i)
 		{	
 			if(((*i)->questid==f)&&((*i)->beginstate==a2))

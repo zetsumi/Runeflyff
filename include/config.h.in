@@ -1,20 +1,20 @@
+#ifndef _CONFIG_H_IN_
+#define _CONFIG_H_IN_
+
 #pragma once
+
+#define RUNEFLYFF_VERSION "${RUNEFLYFF_VERSION}"
 
 #cmakedefine MSVC_BUILD
 
 #cmakedefine MYSQL_SUPPORT
 
-// For Visual Studio 2010 and older, templates use typedef. Newer ones might use the proper typename, I don't know
 #ifdef MSVC_BUILD
-#define templateTypedef
-#else
-#define templateTypedef typename
+#define fopen fopen_s
+#define sscanf sscanf_s
+
+// Bundled pthread errors without this
+#define HAVE_STRUCT_TIMESPEC
 #endif
 
-// MinGW / GCC / Clang do not have *_s functions defined
-#ifndef MSVC_BUILD
-#include <cstdio>
-
-#define sprintf_s(buffer, len, str, ...) snprintf(buffer, len, str, __VA_ARGS__)
-#define sscanf_s(buffer, str, ...) sscanf(buffer, str, __VA_ARGS__)
 #endif

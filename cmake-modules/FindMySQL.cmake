@@ -1,6 +1,7 @@
 # - Try to find MySQL.
 # Once done this will define:
 # MYSQL_FOUND			- If false, do not try to use MySQL.
+# MYSQL_DYNAMIC		    - Dynamic libraries.
 # MYSQL_INCLUDE_DIRS	- Where to find mysql.h, etc.
 # MYSQL_LIBRARIES		- The libraries to link against.
 # MYSQL_VERSION_STRING	- Version in a string of MySQL.
@@ -27,17 +28,33 @@
 if( WIN32 )
     find_path( MYSQL_INCLUDE_DIR
             NAMES "mysql.h"
-            PATHS "${MySQL_DIR}/include"
-            PATHS "$ENV{PROGRAMFILES}/MySQL/*/include"
-            "$ENV{PROGRAMFILES\(x86\)}/MySQL/*/include"
-            "$ENV{SYSTEMDRIVE}/MySQL/*/include" )
+            PATHS
+                "${MySQL_DIR}/include"
+                "$ENV{PROGRAMFILES}/MySQL/*/include"
+                "$ENV{PROGRAMFILES\(x86\)}/MySQL/*/include"
+                "$ENV{SYSTEMDRIVE}/MySQL/*/include" )
 
     find_library( MYSQL_LIBRARY
-            NAMES "libmysql" "mysqlclient" "mysqlclient_r"
-            PATHS "${MySQL_DIR}/lib"
-            PATHS "$ENV{PROGRAMFILES}/MySQL/*/lib"
-            "$ENV{PROGRAMFILES\(x86\)}/MySQL/*/lib"
-            "$ENV{SYSTEMDRIVE}/MySQL/*/lib" )
+            NAMES
+                "libmysql"
+                "mysqlclient"
+                "mysqlclient_r"
+            PATHS
+                "${MySQL_DIR}/lib"
+                "$ENV{PROGRAMFILES}/MySQL/*/lib"
+                "$ENV{PROGRAMFILES\(x86\)}/MySQL/*/lib"
+                "$ENV{SYSTEMDRIVE}/MySQL/*/lib" )
+
+    find_file( MYSQL_DYNAMIC
+            NAMES
+                "libmysql.dll"
+                "mysqlclient.dll"
+                "mysqlclient_r.dll"
+            PATHS
+                "${MySQL_DIR}/lib"
+                "$ENV{PROGRAMFILES}/MySQL/*/lib"
+                "$ENV{PROGRAMFILES\(x86\)}/MySQL/*/lib"
+                "$ENV{SYSTEMDRIVE}/MySQL/*/lib" )
 else()
     find_path( MYSQL_INCLUDE_DIR
             NAMES "mysql.h"
@@ -59,22 +76,20 @@ else()
             "/usr/mysql/lib64/mysql" )
 endif()
 
-
-
 if( MYSQL_INCLUDE_DIR AND EXISTS "${MYSQL_INCLUDE_DIR}/mysql_version.h" )
     file( STRINGS "${MYSQL_INCLUDE_DIR}/mysql_version.h"
             MYSQL_VERSION_H REGEX "^#define[ \t]+MYSQL_SERVER_VERSION[ \t]+\"[^\"]+\".*$" )
     string( REGEX REPLACE
             "^.*MYSQL_SERVER_VERSION[ \t]+\"([^\"]+)\".*$" "\\1" MYSQL_VERSION_STRING
             "${MYSQL_VERSION_H}" )
-    message("Expected Found MySQL version ${MYSQL_VERSION_STRING}")
+    message("Found MySQL library ${MYSQL_LIBRARY}")
+    message("Found MySQL version ${MYSQL_VERSION_STRING}")
 endif()
 
 # handle the QUIETLY and REQUIRED arguments and set MYSQL_FOUND to TRUE if
 # all listed variables are TRUE
 include( FindPackageHandleStandardArgs )
 find_package_handle_standard_args( MYSQL
-        #DEFAULT_MSG
         REQUIRED_VARS	MYSQL_LIBRARY MYSQL_INCLUDE_DIR
         VERSION_VAR		MYSQL_VERSION_STRING )
 

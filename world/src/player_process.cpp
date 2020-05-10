@@ -1642,7 +1642,7 @@ void tplayer::teleportf(const char *t)
 	if((trade!=0)||(shop.getopened()))return;
 	canceldelayed();
 	int x=(int)pos.x,y=(int)pos.y,z=(int)pos.z,m=mapid;
-	sscanf_s(t, "%d %d %d %d", &x, &y, &z, &m);
+	sscanf(t, "%d %d %d %d", &x, &y, &z, &m);
 	changemap(m,(float)x,(float)y,(float)z);
 }
 
@@ -1653,7 +1653,7 @@ void tplayer::teleportf2(const char *t)
 	canceldelayed();
 	float x=pos.x,z=pos.z;
 	int m=mapid;
-	sscanf_s(t, "%d %f %f", &m, &x, &z);
+	sscanf(t, "%d %f %f", &m, &x, &z);
 	changemap(m,x,pos.y,z);
 }
 
@@ -1686,7 +1686,7 @@ void tplayer::movetopoint()
 void tplayer::spawnitem(const char *t)
 {
 	int id,num=1,up=0,eletype=0,eup=0;
-	sscanf_s(t, "%d %d %d %d %d", &id, &num, &up, &eletype, &eup);
+	sscanf(t, "%d %d %d %d %d", &id, &num, &up, &eletype, &eup);
 	if(itemlist.at(id).id>0)
 	{
 		item targy(id);
@@ -1702,7 +1702,7 @@ void tplayer::spawnmob(const char *t)
 {
 	int tp=21,a,n=1, ag=0;
 	float size=1;
-	sscanf_s(t, "%d %d %f %d", &tp, &n, &size, &ag);
+	sscanf(t, "%d %d %f %d", &tp, &n, &size, &ag);
 	if(monsterlist.at(tp).id>0)
 		for(a=0;a<n;a++)
 			new character_mob(tp, cl, mapid, pos.x, pos.y, pos.z, ag!=0, size);
@@ -1714,7 +1714,7 @@ void tplayer::spawnnpc(const char *t)
 {
 /*
 	int a=21, b=1, c, d=8, e;
-//	sscanf_s(t, "%d %d %d", &a, &b, &d, &t2[0]);
+//	sscanf(t, "%d %d %d", &a, &b, &d, &t2[0]);
 	sscanf_s(t, "%d", &a);
 	int cc=0;
 	for(cc=0;(t[cc]!=32)&&(t[cc]!=0);cc++);

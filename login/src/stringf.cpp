@@ -51,7 +51,7 @@ std::string toString(uint64_t a)
 std::string toString(int32_t a)
 {
 	char puffer[24];
-	sprintf_s(&puffer[0], 24, "%d", a);
+	snprintf(&puffer[0], 24, "%d", a);
 	return std::string(&puffer[0]);
 }
 
@@ -82,35 +82,35 @@ std::string operator+(const char *s, const std::string& s2)
 std::string toString(float a)
 {
 	char puffer[64];
-	sprintf_s(&puffer[0], 64, "%f", a);
+	snprintf(&puffer[0], 64, "%f", a);
 	return std::string(&puffer[0]);
 }
 
 int toInt(std::string str)
 {
 	int a=0;
-	sscanf_s(str.c_str(), "%d", &a);
+	sscanf(str.c_str(), "%d", &a);
 	return a;
 }
 
 float toFloat(std::string str)
 {
 	float a=0;
-	sscanf_s(str.c_str(), "%f", &a);
+	sscanf(str.c_str(), "%f", &a);
 	return a;
 }
 
 int toInt(char *p)
 {
 	int a=0;
-	sscanf_s(p, "%d", &a);
+	sscanf(p, "%d", &a);
 	return a;
 }
 
 float toFloat(char *p)
 {
 	float a=0;
-	sscanf_s(p, "%f", &a);
+	sscanf(p, "%f", &a);
 	return a;
 }
 

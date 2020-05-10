@@ -1,6 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
-PROJECT(Runeflyff)
+PROJECT(Runeflyff
+        VERSION 0.74.4)
+SET(RUNEFLYFF_VERSION ${PROJECT_VERSION})
 
 # Find includes in corresponding build directories
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -8,63 +10,22 @@ SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Include local modules
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-modules")
 
-message("cmake_module_path = ${CMAKE_MODULE_PATH}")
+MESSAGE("cmake_module_path = ${CMAKE_MODULE_PATH}")
+
+# Must use a 32-bit compiler
+TRY_RUN(RUN_RESULT_VAR IS_I386_COMPILER ${PROJECT_BINARY_DIR} ${CMAKE_SOURCE_DIR}/ptr_size.cpp)
+IF(NOT IS_I386_COMPILER)
+    MESSAGE(FATAL_ERROR "You must use a 32-bit compiler!")
+ENDIF()
 
 # Check for C++11/C++0x compatibility. This is required.
+INCLUDE(RequireCXX11)
 
-INCLUDE(CheckCXXCompilerFlag)
-
-SET(MS_CXX14 "/std:c++14")
-SET(MS_CXX17 "/std:c++17")
-
-IF (MSVC)
-    CHECK_CXX_COMPILER_FLAG(${MS_CXX14} MSVC_SUPPORTS_CXX14)
-    CHECK_CXX_COMPILER_FLAG(${MS_CXX17} MSVC_SUPPORTS_CXX17)
-    SET(MSVC_SUPPORTS_CXX11 MSVC_VERSION > 1500)
-
-    IF (MSVC_SUPPORTS_CXX17)
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MS_CXX17}")
-    ELSEIF (MSVC_SUPPORTS_CXX14)
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MS_CXX14}")
-    ELSEIF (MSVC_SUPPORTS_CXX11)
-        MESSAGE(WARNING "The compiler ${CMAKE_CXX_COMPILER} has limited C++11 support. Consider using Visual Studio 2017 or later.")
-    ELSE()
-        MESSAGE(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use Visual Studio 2017 or later.")
-    ENDIF()
+IF(MINGW AND WIN32)
+    GET_FILENAME_COMPONENT(Mingw_Path ${CMAKE_CXX_COMPILER} PATH)
+    SET(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Mingw_Path}/libgcc_s_dw2-1.dll ${Mingw_Path}/libwinpthread-1.dll ${Mingw_Path}/libstdc++-6.dll)
+    MESSAGE(DEBUG "The following libs from MinGW will be included as part of 'cmake install' : ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}")
 ENDIF()
-
-# GCC and LLVM support the same command line arguments
-
-SET(GNU_COMPAT_COMPILER TRUE)
-
-SET(GNU_CXX0X "-std=c++0x")
-SET(GNU_CXX11 "-std=c++11")
-SET(GNU_CXX14 "-std=c++14")
-SET(GNU_CXX17 "-std=c++17")
-
-CHECK_CXX_COMPILER_FLAG(${GNU_CXX0X} GNU_SUPPORTS_CXX0X)
-CHECK_CXX_COMPILER_FLAG(${GNU_CXX11} GNU_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG(${GNU_CXX14} GNU_SUPPORTS_CXX14)
-CHECK_CXX_COMPILER_FLAG(${GNU_CXX17} GNU_SUPPORTS_CXX17)
-
-IF (GNU_SUPPORTS_CXX17)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX17}")
-ELSEIF (GNU_SUPPORTS_CXX14)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX14}")
-ELSEIF (GNU_SUPPORTS_CXX11)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX11}")
-    MESSAGE(WARNING "Your compiler does not support C++14! Consider updating.")
-ELSEIF (GNU_SUPPORTS_CXX0X)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX0X}")
-    MESSAGE(WARNING "Your compiler does not support C++14! Consider updating.")
-ELSE()
-    MESSAGE(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-ENDIF()
-
-if( MINGW )
-    get_filename_component( Mingw_Path ${CMAKE_CXX_COMPILER} PATH )
-    set( CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Mingw_Path}/libgcc_s_dw2-1.dll ${Mingw_Path}/libstdc++-6.dll )
-endif( MINGW )
 
 SET(MYSQL_SUPPORT ON)
 

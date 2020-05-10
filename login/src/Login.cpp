@@ -1,5 +1,6 @@
 
 #include "stdafx.h"
+#include <config.h>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -7,7 +8,7 @@
 #include "network.h"
 #include "buffer.h"
 #include "reciever.h"
-#include <ctime.>
+#include <ctime>
 #include <cstdio>
 #include <cstring>
 #include <list>
@@ -340,6 +341,8 @@ int loadsqlserverip(const std::string& filename)
 
 int main(int argc, char *argv[])
 {
+    printf("Runeflyff v%s - Login\n", RUNEFLYFF_VERSION);
+
 	int serverid=loadsqlserverip("server.txt");
 #ifndef __linux__
 	WSAData wsaData;

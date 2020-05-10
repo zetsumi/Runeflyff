@@ -95,21 +95,21 @@ std::string operator+(const char *s, const std::string& s2)
 std::string toString(int32_t a)
 {
 	char puffer[24];
-	sprintf_s(&puffer[0], 24, "%d", a);
+	snprintf(&puffer[0], 24, "%d", a);
 	return std::string(&puffer[0]);
 }
 
 std::string toString(uint32_t a)
 {
 	char puffer[24];
-	sprintf_s(&puffer[0], 24, "%u", a);
+	snprintf(&puffer[0], 24, "%u", a);
 	return std::string(&puffer[0]);
 }
 
 std::string toString(float a)
 {
 	char puffer[64];
-	sprintf_s(&puffer[0], 64, "%f", a);
+	snprintf(&puffer[0], 64, "%f", a);
 	return std::string(&puffer[0]);
 }
 
