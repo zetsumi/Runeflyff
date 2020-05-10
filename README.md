@@ -54,7 +54,8 @@ Changelog
 * Break Cmake logic into modules
 * Restrict compilers to 32 bit
 * Update winpthreads-32
-* Support compiling under MSVC 16 (Visual Studio 2019)    
+* Support compiling under MSVC 16 (Visual Studio 2019)  
+* Remove bundled MySQL  
 
 0.74.3
 ---

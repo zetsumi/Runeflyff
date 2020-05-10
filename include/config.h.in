@@ -10,7 +10,6 @@
 #cmakedefine MYSQL_SUPPORT
 
 #ifdef MSVC_BUILD
-#define fopen fopen_s
 #define sscanf sscanf_s
 
 // Bundled pthread errors without this

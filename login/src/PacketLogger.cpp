@@ -2,10 +2,7 @@
 
 PacketLogger::PacketLogger(const std::string& filename, LogMode mode) : mode(mode)
 {
-	if(mode == BINARY)
-		fh = fopen(filename.c_str(), "wb");
-	else
-		fh = fopen(filename.c_str(), "w");
+    fopen_s(&fh, filename.c_str(), mode == BINARY ? "wb" : "w");
 }
 
 PacketLogger::~PacketLogger(void)

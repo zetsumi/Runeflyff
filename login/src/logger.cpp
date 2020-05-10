@@ -22,7 +22,7 @@ tlogger logger("", "logger_login.dat");
 tlogger::tlogger(const std::string& prefix, const std::string& fname):f1(0),nerrors(0),prefix(prefix)
 {
 	if(fname.c_str() != NULL)
-        f1=fopen(fname.c_str(), "w+b");
+        fopen_s(&f1, fname.c_str(), "w+b");
 }
 
 tlogger::~tlogger()
