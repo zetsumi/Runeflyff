@@ -30,7 +30,7 @@ ENDIF()
 SET(MYSQL_SUPPORT ON)
 
 IF (MYSQL_SUPPORT)
-    SET(MySQL_DIR "C:\\Program Files (x86)\\MySQL\\MySQL Connector C++ 8.0")
+    SET(MySQL_DIR "F:\\Programs (x86)\\MySQL\\MySQL Connector C 6.1")
 
     FIND_PACKAGE(MySQL REQUIRED)
     INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIRS})

@@ -47,6 +47,24 @@ You will need the following dependencies to build Runeflyff from source:
 Changelog
 ===
 
+0.75.0
+---
+Convert the following tables from MySQL to static files
+- [ ] drops
+    - tdrop -> rune::model::DropData2
+- [ ] itemlist
+- [x] itemspawns
+    - itemspawn -> partial: rune::model::spawn::ItemSpawn
+- [x] mobspawns
+    - mobspawn -> partial: rune::model::spawn::MobSpawn
+- [ ] monsterlist
+- [ ] npcdialogs
+- [ ] questdialogs
+- [ ] questdrops
+- [ ] questitems
+- [ ] skillist
+- [ ] skillist2
+
 0.74.4
 ---
 * CMake autodetects MySQL Connector/C if installed to the default ProgramFiles (x86) folder. 

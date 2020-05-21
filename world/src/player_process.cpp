@@ -3727,7 +3727,11 @@ void itemidsearch(tplayer &player, const char *p)
 
 void mobidsearch(tplayer &player, const char *p)
 {
+    // fixme: iterable<mobdata2> mobs = player.cl->mobsearch(p); // return iterable<mobdata2>
+    // fixme: std::foreach(mobs.begin(), mobs.end(), mob -> player.greentext(player.cl->print("%s %s", mob.id, mob.name)))
+
 	sqlquery &s1=player.cl->dbmonsterlist;
+
 	std::string str="name like '%";
 	str+=p;
 	str+="%'";
@@ -4124,7 +4128,7 @@ void tplayer::skilluse()
 	if((d>0)&&(actionslotp!=0))return;	/*toreenable*/
 	if(d>0)as=1;
 
-	skill=skills.at(job).at(b);
+	skill=skills[job][b];
 	level=skilllevels.at(skill);
 	tskilldata *s=&skilllist.at(skill).at(level-1);
 

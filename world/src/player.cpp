@@ -1860,13 +1860,13 @@ void tplayer::reanimate()
 
 void tplayer::incskillexp(int b)
 {
-    int skill=skills.at(job).at(b);
+    int skill=skills[job][b];
 	if(skill<0)return;
 	tskilldata *s=&skilllist.at(skill).at(skilllevels.at(skill)-1);
 	if((s->skilltype==13)&&(party==0))return;
 	unsigned int pval=s->pxp;
 
-    if((skilllevels.at(skill)<skillmaxlevel.at(job).at(b))&&(pxp>=pval))
+    if((skilllevels.at(skill)<skillmaxlevel[job][b])&&(pxp>=pval))
 	{
 		pxp-=pval;
         this->skillexp.at(skill)+=skillExpMultiplier;
@@ -1883,7 +1883,7 @@ void tplayer::incskillexp(int b)
 bool tplayer::managempfp(int b)	//mp fp and arrows and posters
 {
 	if((berserk)||(silence))return false;
-    int skill=skills.at(job).at(b);
+    int skill=skills[job][b];
     int level=skilllevels.at(skill);
 //#ifdef _DEBUG
 	if((level<1)||(level>20))throw error(std::string("Skill level is out of range ")+toString(level), "character_player::managempfp");
@@ -2520,7 +2520,7 @@ bool asstruct::process()
 	else if(askills[pos]==0)pos=5;
 	else if(player->managempfp(askills[pos]))
 	{
-		int skill=skills.at(pjob).at(askills[pos]);
+		int skill=skills[pjob][askills[pos]];
 		int level=player->skilllevels.at(skill);
 		if(!player->doskill(skill, level, c, pos, true, this->initialFocus))pos=5;
 		else player->incskillexp(askills[pos]);
@@ -3002,12 +3002,12 @@ void tplayer::maxskillexp(){
 	int skill;
 	for(int a=0;a<43;a++)
 	{
-		skill=skills.at(job).at(a);
+		skill=skills[job][a];
 		if(skill<0)continue;
 		tskilldata *s=&skilllist.at(skill).at(skilllevels.at(skill)-1);
 		//if((s->skilltype==13)&&(party==0))continue;
 
-		if((skilllevels.at(skill)<skillmaxlevel.at(job).at(a)))
+		if((skilllevels.at(skill)<skillmaxlevel[job][a]))
 		{
 			this->skillexp.at(skill)+=skillExpMultiplier;
 			if(this->skillexp[skill]>=skillacc[skilllevels[skill]])

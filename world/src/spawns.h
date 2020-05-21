@@ -3,6 +3,8 @@
 
 #include <list>
 #include "scheduler.h"
+#include "model/spawn/item.h"
+#include "model/spawn/mob.h"
 
 class character_base;
 class cluster;
@@ -22,57 +24,34 @@ public:
 	virtual void unregister(character_base *o)=0;
 };
 
-class mobspawn:public spawner
+class mobspawn : public rune::model::spawn::MobSpawn, public spawner
 {
 	friend class cluster;
 	friend class character_mob;
-
-	int type;
-	int normal;
-	int agro;
-	float x;
-	float y;
-	float z;
-	int rx;
-	int ry;
-	int mapid;
-	int respawnrate;
-	long long lastrespawn;
 
 	int nagro;
 	int nnormal;
 public:
 	mobspawn(cluster *c, int type1, int normal1, int agro1, float x1, float y1, float z1, int rx1, int ry1, int mapid1, int respawnrate1)
-		:spawner(c), type(type1),normal(normal1), agro(agro1), x(x1), y(y1), z(z1), rx(rx1/2), ry(ry1/2), mapid(mapid1), respawnrate(respawnrate1*1000)
-		,nnormal(0),nagro(0),lastrespawn(0)
-	{
-
-	}
+		:spawner(c),
+		rune::model::spawn::MobSpawn(type1, normal1, agro1, x1, y1, z1, rx1/2, ry1/2, mapid1, respawnrate1*1000, 0),
+		nnormal(0),
+		nagro(0) {}
 	virtual ~mobspawn(){}
 	void unregister(character_base *);
 	void timer();
 };
 
 
-class itemspawn:public spawner
+class itemspawn: public rune::model::spawn::ItemSpawn, public spawner
 {
-	int type;
-	int num;
-	float x;
-	float y;
-	float z;
-	int rx;
-	int ry;
-	int mapid;
-	int respawnrate;
-	long long lastrespawn;
-
-	int n;
+private:
+    int n;
 public:
 	itemspawn(cluster *c, int type1, int normal, float x1, float y1, float z1, int rx1, int ry1, int mapid1, int respawnrate1)
-		:spawner(c), type(type1),num(normal), x(x1), y(y1), z(z1), rx(rx1/2), ry(ry1/2), mapid(mapid1), respawnrate(respawnrate1*1000)
-		,n(0),lastrespawn(0)
-	{}
+		: spawner(c),
+		rune::model::spawn::ItemSpawn(type1, normal, x1, y1, z1, rx1/2, ry1/2, mapid1, respawnrate1*1000, 0),
+		n(0) {}
 	virtual ~itemspawn(){}
 	void unregister(character_base *)
 	{

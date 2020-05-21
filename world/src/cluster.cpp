@@ -7,6 +7,7 @@
 #include "main.h"
 #include "objactions.h"
 #include "charserver.h"
+#include "io/file/csv.h"
 
 const int desiredlatency=100;
 const int desiredlatency23=desiredlatency*2/3;
@@ -340,52 +341,42 @@ catch(...)
 
 int cluster::loadmobspawns()
 {
-	int a,b;
-	sqlquery s4(connections.at(0), "mobspawns");
-	s4.select();
-	a=0;
-	int m_type=s4.getTableColumnIndex("type");
-	int m_normal=s4.getTableColumnIndex("normal");
-	int m_agro=s4.getTableColumnIndex("agro");
-	int m_x=s4.getTableColumnIndex("x");
-	int m_y=s4.getTableColumnIndex("y");
-	int m_z=s4.getTableColumnIndex("z");
-	int m_rx=s4.getTableColumnIndex("rx");
-	int m_ry=s4.getTableColumnIndex("ry");
-	int m_mapid=s4.getTableColumnIndex("mapid");
-	int m_respawnrate=s4.getTableColumnIndex("respawnrate");
-	while(s4.next())
-	{
-		b=toInt(s4[m_type]);
-		if(((b!=667)&&(b!=668))||(this->isPK()))new mobspawn(this, b, toInt(s4[m_normal]), toInt(s4[m_agro]), toFloat(s4[m_x]), toFloat(s4[m_y]), toFloat(s4[m_z]), toInt(s4[m_rx]), toInt(s4[m_ry]), toInt(s4[m_mapid]), toInt(s4[m_respawnrate]));
-		a++;
-	}
-	s4.freeup();
-	return a;
+    int count = 0;
+
+    io::CSVReader<10> reader("resources/mobspawns.csv");
+    reader.read_header(io::ignore_extra_column,
+            "type", "mapid", "x", "y", "z", "rx", "ry", "normal", "agro", "respawnrate");
+
+    int type, mapId, rx, ry, normal, agro, respawnRate;
+    float x, y, z;
+
+    while(reader.read_row(type, mapId, x, y, z, rx, ry, normal, agro, respawnRate))
+    {
+        if( ((type != 667) && (type != 668)) || (this->isPK()))
+        {
+            new mobspawn(this, type, normal, agro, x, y, z, rx, ry, mapId, respawnRate);
+        }
+        count++;
+    }
+
+    return count;
 }
 
 int cluster::loaditemspawns()
 {
-	int a;
-	sqlquery s4(connections.at(0), "itemspawns");
-	s4.select();
-	a=0;
-	int i_type=s4.getTableColumnIndex("type");
-	int i_number=s4.getTableColumnIndex("number");
-	int i_x=s4.getTableColumnIndex("x");
-	int i_y=s4.getTableColumnIndex("y");
-	int i_z=s4.getTableColumnIndex("z");
-	int i_rx=s4.getTableColumnIndex("rx");
-	int i_ry=s4.getTableColumnIndex("ry");
-	int i_mapid=s4.getTableColumnIndex("mapid");
-	int i_respawnrate=s4.getTableColumnIndex("respawnrate");
-	while(s4.next())
-	{
-		new itemspawn(this, toInt(s4[i_type]), toInt(s4[i_number]), toFloat(s4[i_x]), toFloat(s4[i_y]), toFloat(s4[i_z]), toInt(s4[i_rx]), toInt(s4[i_ry]), toInt(s4[i_mapid]), toInt(s4[i_respawnrate]));
-		a++;
-	}
-	s4.freeup();
-	return a;
+    int count = 0;
+
+    io::CSVReader<9> reader("resources/itemspawns.csv");
+    reader.read_header(io::ignore_extra_column,
+            "type", "number", "x", "y", "z", "rx", "ry", "mapid", "respawnrate");
+
+    int type, number, rx, ry, mapId, respawnRate;
+    float x, y, z;
+
+    while (reader.read_row(type, number, x, y, z, rx, ry, mapId, respawnRate)) {
+        new itemspawn(this, type, number, x, y, z, rx, ry, mapId, respawnRate);
+        count++;
+    }
 }
 
 int cluster::loadnpces()
@@ -446,7 +437,6 @@ void cluster::cmain()
 	dbitemlist.init(connections[0], "itemlist");
 	dbmails.init(connections[0], "mails");
 	dbskilllist2.init(connections[0], "skilllist2");
-	dbmonsterlist.init(connections[0], "monsterlist");
 	dbguilds.init(connections[0], "guilds");
 	dbclusters.init(connections[0], "clusters");
 

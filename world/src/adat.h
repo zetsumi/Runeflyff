@@ -8,6 +8,7 @@
 #include "item.h"
 #include "error.h"
 #include "vector.h"
+#include "model/dropdata2.h"
 
 enum tweather {wnothing=0, rain, snow};
 //extern float dambigfloat;
@@ -55,14 +56,7 @@ struct mobdata2
 	int cash;
 	std::string name;
 	std::map<int, std::pair<int, int> > quest_killmobs;
-	struct tdrop
-	{
-		int id;
-		float dropchance;
-		int nmin, nmax;
-		tdrop(int i, float d, int min, int max):id(i),dropchance(d),nmin(min), nmax(max){};
-
-	};
+	typedef rune::model::DropData2 tdrop;
 	std::list<tdrop> drops;
 	struct questdata
 	{
@@ -141,7 +135,7 @@ struct tguildexp
 {
 	int mdrop;
 	int money;
-	tguildexp(int a, int b):mdrop(a),money(b){};
+	tguildexp(int a, int b):mdrop(a),money(b){}
 };
 
 struct setbonusdata
@@ -154,79 +148,69 @@ struct setbonusdata
 struct setdata
 {
 	int id;
-	setbonusdata bonuses[7];
+	std::array<setbonusdata, 7> bonuses;
 };
 
 void datainit();
-void datafree();
 
-
-extern std::vector2<std::vector2<int> > skillmaxlevel;
-extern std::vector2<std::vector2<int> > skills;
+extern const std::array<int, 45> skillmaxlevel[32];
+extern const std::array<int, 45> skills[32];
 //extern btree<int, itemdata> itemlist;
 extern std::vector2<itemdata> itemlist;
 
-extern std::vector2<int> ultimatestats;
-extern std::vector2<int> uphitbonus;
-extern std::vector2<int> upblockbonus;
-extern std::vector2<int> uphpbonus;
-extern std::vector2<int> upmagicbonus;
-extern std::vector2<int> upallstatbonus;
-extern std::vector2<std::vector2<std::vector2<int> > > ultimatebonus;
+extern const std::array<int, 10> ultimatestats;
+extern const std::array<int, 11> uphitbonus;
+extern const std::array<int, 11> upblockbonus;
+extern const std::array<int, 11> uphpbonus;
+extern const std::array<int, 11> upmagicbonus;
+extern const std::array<int, 11> upallstatbonus;
+extern const std::array<int, 5> ultimatebonus[9][5];
 
-extern std::vector2<unsigned int> itemstats;
-extern std::vector2<int> ringbonus;
-extern std::vector2<int> defbonus;
-extern std::vector2<int> atkbonus;
-extern std::vector2<int> hpbonus;
-extern std::vector2<int> mpbonus;
-extern std::vector2<int> fpbonus;
+extern const std::array<unsigned int, 49> itemstats;
+extern const std::array<int, 21> ringbonus;
+extern const std::array<int, 21> defbonus;
+extern const std::array<int, 21> atkbonus;
+extern const std::array<int, 21> hpbonus;
+extern const std::array<int, 21> mpbonus;
+extern const std::array<int, 21> fpbonus;
 
-extern int elementl[6];
-extern int delementl[6];
-extern int stlk[6];
-extern int dstlk[6];
-extern int stlknl[6];
-extern int dstlknl[6];
-/*
-extern std::vector2<int> elementl;
-extern std::vector2<int> delementl;
-extern std::vector2<int> stlk;
-extern std::vector2<int> dstlk;
-extern std::vector2<int> stlknl;
-extern std::vector2<int> dstlknl;
-*/
-extern std::vector2<int> bufflist;
-extern std::vector2<int> job1;
-extern std::vector2<int> job2;
-extern std::vector2<int> skillexp2;
-extern std::vector2<int> skillacc;
-extern int nbufflist;
-extern std::vector2<int> petstats;
-extern std::vector2<std::vector2<int> > petbonus;
-extern std::vector2<int> enctable;
-extern std::vector2<long double> hpj;
-extern std::vector2<long double> mpj;
-extern std::vector2<long double> fpj;
-extern std::vector2<long double> stadef;
-extern std::vector2<long double> leveldef;
-extern std::vector2<long double> defbase;
-extern std::vector2<std::vector2<int> > petids;
-extern std::vector2<vector3d<> > towns;
-extern std::vector2<vector3d<> > lodelights;
-extern std::vector2<vector3d<> > gwtele;
-extern std::vector2<tguildexp> guildexp;
+extern const std::array<int, 6> elementl;
+extern const std::array<int, 6> delementl;
+extern const std::array<int, 6> stlk;
+extern const std::array<int, 6> dstlk;
+extern const std::array<int, 6> stlknl;
+extern const std::array<int, 6> dstlknl;
+
+extern const std::array<int, 57> bufflist;
+extern const std::array<int, 32> job1;
+extern const std::array<int, 32> job2;
+extern const std::array<int, 20> skillexp2;
+extern const std::array<int, 20> skillacc;
+extern const std::array<int, 7> petstats;
+extern const std::array<int, 9> petbonus[7];
+extern const std::array<int, 11> enctable;
+extern const std::array<long double, 16> hpj;
+extern const std::array<long double, 16> mpj;
+extern const std::array<long double, 16> fpj;
+extern const std::array<long double, 16> stadef;
+extern const std::array<long double, 16> leveldef;
+extern const std::array<long double, 16> defbase;
+extern const std::array<int, 3> petids[8];
+extern const std::array<vector3d<>, 3> towns;
+extern const std::array<vector3d<>, 5> lodelights;
+extern const std::array<vector3d<>, 4> gwtele;
+extern const std::array<tguildexp, 50> guildexp;
 extern std::vector2<int> skillsupliment;
 
-extern std::vector2<int> upgradeChances;
-extern std::vector2<int> upgradeChancesUlt;
-extern std::vector2<int> upgradeChancesJewel;
-extern std::vector2<std::vector2<int> > ultimateweap;
+extern const std::array<int, 10> upgradeChances;
+extern const std::array<int, 10> upgradeChancesUlt;
+extern const std::array<int, 20> upgradeChancesJewel;
+extern const std::array<int, 2> ultimateweap[50];
 extern std::vector2<std::vector2<tskilldata> > skilllist;
 extern std::vector2<tskilldata > cskilllist;
 extern std::vector2<mobdata2> monsterlist;
-extern std::vector2<unsigned long long > explist;
-extern std::vector2<unsigned long long > pxplist;
+extern const std::array<unsigned long long, 150> explist;
+extern const std::array<int, 150> pxplist;
 //extern std::vector2<int> skilltype;
 extern std::vector2<int> nguildmembers;
 

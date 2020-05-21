@@ -27,6 +27,7 @@ INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 
 ADD_EXECUTABLE(WorldServer7
 		src/adat.cpp
+		src/adat_constants.cpp
 		src/attack.cpp
 		src/bank.cpp
 		src/buff.cpp
@@ -78,6 +79,8 @@ ENDIF()
 
 INSTALL(TARGETS WorldServer7
 		RUNTIME DESTINATION ${PROJECT_INSTALL_DIR}/bin)
+
+INSTALL(DIRECTORY resources DESTINATION ${PROJECT_INSTALL_DIR}/bin)
 
 IF(MSVC)
 	INSTALL(FILES
