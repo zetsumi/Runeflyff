@@ -310,7 +310,7 @@ void tgridcell::removeallfrom(tplayer *p)
 }
 void tgridcell::createallfor(tplayer *p)
 {
-	ul m=p->asyncbuffermutex.lock();
+    std::lock_guard<std::mutex> guard(p->asyncbuffermutex);
 	if(p->asyncbuffer==0)p->asyncbuffer=new buffer();
 	std::list<tplayer*>::iterator i1;
 	std::list<character_item*>::iterator i2;

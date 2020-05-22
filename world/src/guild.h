@@ -1,10 +1,10 @@
 #ifndef __guild_h__
 #define __guild_h__
 
-#include "pmutex.h"
 #include <string>
 #include <list>
 #include <map>
+#include "platform_threading.h"
 #include "vector2.h"
 
 #include "bank.h"
@@ -54,12 +54,12 @@ class tguild
 	bool join(tplayer *p, int dbid, int plevel, int pjob, std::string &pname);
 
 	int owner,guildid;
-	static pmutex globalguildmutex;
+	static std::mutex globalguildmutex;
 	static int maxguildid;
 	static int maxguildownerid;
 	static int nguilds;
 
-	pmutex guildmutex;
+	std::mutex guildmutex;
 
 	void guildmulticast(buffer &bs);
 	void guildmulticast2(buffer &bs2);
@@ -96,7 +96,7 @@ public:
 	void siege_end(bool won);
 	tguild *getwaring()
 	{
-		ul m=guildmutex.lock();
+	    std::lock_guard<std::mutex> guard (this->guildmutex);
 		return waring;
 	}
 	static void loadallguilds();
@@ -157,7 +157,7 @@ public:
 
 extern std::map<int, tguild*> guilds;
 extern std::map<int, tguild*> owguilds;
-extern pmutex guildtreemutex;
+extern std::mutex guildtreemutex;
 
 
 #endif

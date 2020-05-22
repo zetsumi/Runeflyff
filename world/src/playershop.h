@@ -1,16 +1,16 @@
 #ifndef __playershop_h__
 #define __playershop_h__
 
+#include "platform_threading.h"
 #include "vector2.h"
 #include <map>
-#include "pmutex.h"
 #include <string>
 
 class tplayer;
 class buffer;
 class playershop
 {
-	pmutex shopmutex;
+	std::mutex shopmutex;
 	std::string name;
 	std::vector2<unsigned char> itemek;
 	std::vector2<int> nitemek;

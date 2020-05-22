@@ -17,7 +17,6 @@
 #include "buffer.h"
 #include "adat.h"
 #include "charserver.h"
-#include "pmutex.h"
 
 #include "quest.h"
 
@@ -46,7 +45,7 @@ sqlquery dbguilds;
 sqlquery dbguilds_g;
 sqlquery dbcharacters_g;
 sqlquery dbguildsiege;
-pmutex dbguildsiege_mutex;
+std::mutex dbguildsiege_mutex;
 clustercont *clusters=0;
 unsigned long ulong1=1;
 
@@ -421,17 +420,12 @@ mainloop_end:
 	tguild::saveallguilds();
 
 	logger.log("Closeing clusters\n");
-	pthread_t **cj=0;
-	if(clusters!=0)
-	{
-		cj=new pthread_t*[nclusters];
-		for(a=0;a<(int)clusters->size();a++)
-		{
-			cj[a]=(*clusters)[a]->cthread;
-			(*clusters)[a]->endprg=true;
-		}
-		logger.log("Clusters closed\n");
 
+	if (clusters != 0) {
+	    for (int i = 0; i < clusters->size(); i++) {
+            (*clusters)[a]->endprg=true;
+	    }
+        logger.log("Clusters closed\n");
 	}
 
 	logger.log("Closeing mysql\n");
@@ -450,9 +444,15 @@ mainloop_end:
 	if(clusters!=0)
 	{
 		logger.log("Waiting for clusterthreads to finish\n");
-		for(a=0;a<nclusters;a++)pthread_join(*cj[a],NULL);
+
+        for (int i = 0; i < clusters->size(); i++) {
+            if ((*clusters)[a]->cthread.joinable()) {
+                (*clusters)[a]->cthread.join();
+            }
+        }
+
 		logger.log("threads finished\n");
-		delete[] cj;
+
 		if(clusters!=0)delete clusters;
 		clusters=0;
 	}

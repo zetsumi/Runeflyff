@@ -7,6 +7,7 @@
 #include <queue>
 #include "buffer.h"
 #include "listremover.h"
+#include "platform_threading.h"
 
 class tplayer;
 class cluster;
@@ -44,8 +45,8 @@ class tparty
 	void sendpartyenddata();
 	void partymulticast(buffer &bs);
 	long long fctime,gbtime,linktime,stime;
-	pmutex partymutex;
-	static pmutex partycreatemutex;
+	std::mutex partymutex;
+	static std::mutex partycreatemutex;
 	bool leave2(playerdata *pd, int a2, tplayer *p);
 	long long alink, asc;
 //	std::list<tparty*>::iterator alinkr, ascr;
@@ -94,22 +95,22 @@ public:
 	void useskill(tplayer *p, int skill);
 	void set_gwparty()
 	{
-		ul m=partymutex.lock();
+	    std::lock_guard<std::mutex> partyguard(this->partymutex);
 		maxpartymembers=10;
 	}
 	long long getfc()
 	{
-		ul m=partymutex.lock();
+        std::lock_guard<std::mutex> partyguard(this->partymutex);
 		return fctime;
 	}
 	long long getgb()
 	{
-		ul m=partymutex.lock();
+        std::lock_guard<std::mutex> partyguard(this->partymutex);
 		return gbtime;
 	}
 	long long gets()
 	{
-		ul m=partymutex.lock();
+        std::lock_guard<std::mutex> partyguard(this->partymutex);
 		return stime;
 	}
 	void setplayerfocus(tplayer *p, character_base *f);

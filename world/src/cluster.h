@@ -1,7 +1,6 @@
 #ifndef __cluster_h__
 #define __cluster_h__
 
-#include "pmutex.h"
 #include "vector2.h"
 #include <list>
 #include <queue>
@@ -17,8 +16,8 @@
 #include "scheduler.h"
 #include "listremover.h"
 #include <memory>
+#include "platform_threading.h"
 
-void* clusterthread( void *t);
 void* recieverthread(void *t);
 void* loadsavethread(void *t);
 
@@ -40,14 +39,9 @@ class cluster
 {
 	friend class clustercont;
 	friend bool moverfunkc(character_base *p);
-	friend void *clusterthread(void *t);
-	friend void *recieverthread(void *t);
-	friend void *loadsavethread(void *t);
 	bool lsendprg;
-	pthread_attr_t ptca;
-	threadparm tp;
 	int clusternumber;
-    pthread_t *csthread, *crthread, *lsthread;
+    std::thread csthread, crthread, lsthread;
 //	pmutex toprocessmutex;
 //	std::list<tplayer*> toprocess;
 	m_queue<tplayer*> toprocess, toload, loaded, startrecv, cmain_toerase, doselect_toerase, doselect_add, logged_and_saved;
@@ -91,7 +85,7 @@ class cluster
 	void processmarklogged();
 	buffer *bbs;
 	std::list<buffer> ooolist;
-	pmutex asyncbuffermutex;
+	std::mutex asyncbuffermutex;
 	buffer *asbs, *asooo;
 	std::list<tparty*> linkattacks;
 	std::list<tparty*> pscircle;
@@ -149,7 +143,7 @@ public:
 		return siegestate;
 	}
 	void setsiegestate(tsiegestate a);
-	pmutex savemutex;
+	std::mutex savemutex;
 	static const int nmaxplayers=1001;
 
 	bool cwcageempty()
@@ -282,14 +276,14 @@ public:
 	}
 	void removelink_lock(listremover<tparty*> &i)
 	{
-		pmutex::unlocker mm=this->clustermutex.lock();
+	    std::lock_guard<std::mutex> guard(this->clustermutex);
 		try{
 			i.remove();
 		}catch(...){}
 	}
 	void removesc_lock(listremover<tparty*> &i)
 	{
-		pmutex::unlocker mm=this->clustermutex.lock();
+        std::lock_guard<std::mutex> guard(this->clustermutex);
 		try{
 			i.remove();
 		}catch(...){}
@@ -299,7 +293,7 @@ public:
 	{
 		return pkval;
 	}
-    pthread_t *cthread;
+    std::thread cthread;
 
 	int getclusternumber()
 	{
@@ -316,7 +310,7 @@ public:
 	m_queue<int> handedplayers;
 	tgrid grid;
 	bool endprg;
-	pmutex clustermutex;
+	std::mutex clustermutex;
 	std::vector2<mcon*> connections;
 	sqlquery dbaccounts;
 	sqlquery dbaccounts4load;
@@ -381,18 +375,18 @@ class clustercont
 {
 	int nclusters;
 	std::vector2<cluster*> clusters;
-	pmutex clustercontmutex;
+	std::mutex clustercontmutex;
 	buffer *bs;
 	buffer *ooo;
 public:
 	size_t size()
 	{
-		pmutex::unlocker m=clustercontmutex.lock();
+	    std::lock_guard<std::mutex>(this->clustercontmutex);
 		return nclusters;
 	}
 	cluster* operator[](int a)
 	{
-		pmutex::unlocker m=clustercontmutex.lock();
+        std::lock_guard<std::mutex>(this->clustercontmutex);
 		return clusters.at(a);
 	}
 	clustercont(mcon *con, int n, int servernumber);

@@ -351,9 +351,15 @@ bool character_buffable::checkbuffs()
 
 void character_buffable::removebuffl(int skill)
 {
-	ul m = (type==ttplayer)? ((tplayer*)this)->playermutex.lock() : pmutex::dontlock();
+    std::unique_lock<std::mutex> guard(static_cast<tplayer*>(this)->playermutex, std::defer_lock);
 
-	if((skill!=193)||(!gm_di))removebuff(skill);
+    if (type == ttplayer) {
+        guard.lock();
+    }
+
+    if (skill != 193 || !gm_di) {
+        removebuff(skill);
+    }
 }
 
 void character_buffable::removebuff(int skill)

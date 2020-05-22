@@ -1134,7 +1134,7 @@ void t_setmsgstate(tplayer *p)
 		{
 			if((p->friendlist[a].dbid!=-1)&&(p->friendlist[a].p!=0))
 			{
-				ul mm=p->friendlist[a].p->asyncbuffermutex.lock();
+			    std::lock_guard<std::mutex> guard(p->friendlist[a].p->asyncbuffermutex);
 				if(p->friendlist[a].p!=0)
 				{
 					p->friendlist[a].p->asyncbuffer2.push_back(buffer());
@@ -1222,7 +1222,7 @@ void t_guildinvite(tplayer *q)
 	q->sr->get(a);
 	tplayer *p=q->cl->getplayer(a);
 	if((p==q)||(p==0))return;
-	ul m=p->playermutex.lock();
+    std::lock_guard<std::mutex> guard(p->playermutex);
 	if(q->guild!=0)
 	{
 		p->bs->cmd(p->getId(), 0x9a)<< q->guild->getowner() << p->dbid;
@@ -1426,7 +1426,7 @@ void t_gwstatus(tplayer *p)
 		p->messagebox("Can't see status now");
 		return;
 	}
-	ul m=dbguildsiege_mutex.lock();
+    std::lock_guard<std::mutex> guard(dbguildsiege_mutex);
 	sqlquery &s1=dbguildsiege;
 
 	s1.select("count(*)");
@@ -4271,7 +4271,7 @@ void tplayer::addfriendbyid()
 	std::map<int, tplayer*>::iterator i;
 	if(b==dbid)
 	{
-		ul m=asyncbuffermutex.lock();
+	    std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 		for(c=0;c<fs;c++)
 		{
 			if(friendlist[c].dbid==a)return;
@@ -4283,7 +4283,7 @@ void tplayer::addfriendbyid()
 		i=cl->dbidplayers.find(a);
 		if(i==cl->dbidplayers.end())return;
 
-		ul mm=i->second->asyncbuffermutex.lock();
+        std::lock_guard<std::mutex> guard2(i->second->asyncbuffermutex);
 		for(d=0;d<fs;d++)
 		{
 			if(i->second->friendlist[d].dbid==b)break;

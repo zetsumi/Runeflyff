@@ -17,7 +17,7 @@ using namespace std;
 void tplayer::init(int sck1, reciever &sr1, std::string &cip, int ticket1, cluster *cl1)
 {
 	{
-		pmutex::unlocker m=asyncbuffermutex.lock();
+	    std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 		if(asyncbuffer!=0)
 		{
 			delete asyncbuffer;
@@ -27,7 +27,7 @@ void tplayer::init(int sck1, reciever &sr1, std::string &cip, int ticket1, clust
 		while(!acmd.empty())acmd.pop();
 	}
 
-	ul mmm=playermutex.lock();
+    std::lock_guard<std::mutex> guard(this->playermutex);
 	last_upgrade_time=0;
 	siege_attackable=false;
 	requested_teleportdown=false;
@@ -198,12 +198,12 @@ void tplayer::removefromcluster()
 
 
 	{
-		ul m=asyncbuffermutex.lock();
+        std::lock_guard<std::mutex> asyncbufferguard(this->asyncbuffermutex);
 		for(a=0;a<(int)friendlist.size();a++)
 		{
 			if((friendlist[a].dbid!=-1)&&(friendlist[a].p!=0))
 			{
-				ul nnnn=friendlist[a].p->asyncbuffermutex.lock();
+                std::lock_guard<std::mutex> friendlistguard(friendlist[a].p->asyncbuffermutex);
 				if(friendlist[a].p!=0)	//do not remove this.
 				{
 					friendlist[a].p->asyncbuffer2.push_back(buffer());
@@ -270,8 +270,8 @@ int tplayer::deinit()
 		if(loaded)
 		{
 			{
-				ul m;
-				if(asyncbuffermutex.trylock(m))
+				std::unique_lock<std::mutex> guard(this->asyncbuffermutex, std::defer_lock);
+				if(guard.try_lock())
 				{
 					if(asyncbuffer!=0)
 					{
@@ -371,7 +371,7 @@ void tplayer::send()
 {
 	if(bs1==0)
 	{
-		ul mmm=playermutex.lock();
+        std::lock_guard<std::mutex> guard(this->playermutex);
 		if(bs!=0)if((bs1==0)&&buffers.empty()&&(bs->getcommandnumber()>0))raise();
 		if((bs1==0)&&(!buffers.empty()))
 		{
@@ -394,7 +394,7 @@ void tplayer::send()
 pmutex savemutex;
 void tplayer::save(bool logout)
 {
-	ul m=cl->savemutex.lock();
+    std::lock_guard<std::mutex>(cl->savemutex);
 	int a;
 #ifdef _DEBUG
 	unsigned long long t1=GetTickCount();
@@ -500,7 +500,7 @@ for(int w=0;w<3;w++)
 	{
 		i=new char[friendlist.size()*8];
 		{
-			ul m=asyncbuffermutex.lock();
+		    std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 			for(a=0;a<(int)friendlist.size();a++)
 			{
 				*(int*)(&i[a*8+0])=friendlist[a].dbid;
@@ -858,7 +858,7 @@ void tplayer::load(int &lparty)
 	p=s1.getptr(p_friendlist);
 	if(((s1["length(friendlist)"])!="NULL")&&(p!=0))
 	{
-		ul m=asyncbuffermutex.lock();
+        std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 		for(a=0;a<(int)friendlist.size();a++)
 		{
 			friendlist[a].dbid=*(int*)(&p[a*8+0]);
@@ -867,7 +867,7 @@ void tplayer::load(int &lparty)
 		}
 	}else
 	{
-		ul m=asyncbuffermutex.lock();
+        std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 		for(a=0;a<(int)friendlist.size();a++)
 		{
 			friendlist[a].dbid=-1;
@@ -1315,7 +1315,7 @@ void tplayer::logincommands()
 	c=0;
 //	logger.log("FRIENDS\n");
 	{
-		ul mmm=asyncbuffermutex.lock();
+        std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 		for(a=0;a<(int)friendlist.size();a++)
 		{
 			if(friendlist[a].dbid!=-1)
@@ -1333,7 +1333,7 @@ void tplayer::logincommands()
 						tplayer *p=i->second;
 						friendlist[a].p=p;
 						{
-							ul nnnnn=p->asyncbuffermutex.lock();
+                            std::lock_guard<std::mutex> playerguard(p->asyncbuffermutex);
 							if(p->friendlist[friendlist[a].listindex].dbid!=dbid)
 							{
 								friendlist[a].dbid=-1;
@@ -1401,7 +1401,7 @@ void tplayer::messagebox(const std::string &c)
 
 void tplayer::amessagebox(const std::string &c)
 {
-	ul m=asyncbuffermutex.lock();
+    std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 	if(asyncbuffer==0)asyncbuffer=new buffer;
 	asyncbuffer->cmd(id, 0xb7);
 	asyncbuffer->sndpstr(c);
@@ -1997,7 +1997,7 @@ void tplayer::restat(int a)
 
 void tplayer::say(const std::string &nev, const std::string &cimzett, const std::string &message, int kuldoid, int cimzettid)
 {
-	ul m=asyncbuffermutex.lock();
+    std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 	asyncbuffer2.push_back(buffer());
 	asyncbuffer2.back() << 0x00ff00e0;
 	asyncbuffer2.back().sndpstr(nev);  //küldő
@@ -2007,7 +2007,7 @@ void tplayer::say(const std::string &nev, const std::string &cimzett, const std:
 }
 void tplayer::whisper(const std::string &nev, const std::string &cimzett, const std::string &message, int kuldoid, int cimzettid)
 {
-	ul m=asyncbuffermutex.lock();
+    std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 	asyncbuffer2.push_back(buffer());
 	asyncbuffer2.back() << 0x00ff00d4;
 	asyncbuffer2.back().sndpstr(nev);  //küldő
@@ -2446,7 +2446,7 @@ asstruct::~asstruct()
 //	logger.log("asstruct ended\n");
 	if(player!=0)
 	{
-		ul m=player->playermutex.lock();
+        std::lock_guard<std::mutex> guard(player->playermutex);
 		player->actionslotp=0;
 		player->cancelskill();
 	}
@@ -2498,7 +2498,8 @@ bool asstruct::process()
 //		player->cancelskill();
 		return true;
 	}
-	ul mmmmm=player->playermutex.lock();
+
+    std::lock_guard<std::mutex> guard(player->playermutex);
 
 	if(player->activation<player->cl->ido)
 	{
@@ -2532,7 +2533,7 @@ bool asstruct::process()
 
 void tplayer::domulticast()
 {
-	ul m=playermutex.lock();
+    std::lock_guard<std::mutex> guard(this->playermutex);
 	if(!tbs.empty())
 	{
 		while(tbs.top().t<=cl->ido)
@@ -2565,9 +2566,9 @@ void tplayer::domulticast()
 void tplayer::getasyncbuffer()
 {
 	{
-		ul mm=playermutex.lock();
+        std::lock_guard<std::mutex> playerguard(this->playermutex);
 		handleacmd();
-		ul m=this->asyncbuffermutex.lock();
+        std::lock_guard<std::mutex> asyncbufferguard(this->asyncbuffermutex);
 		if(asyncbuffer!=0)
 		{
 			this->add(*this->asyncbuffer);
@@ -2877,7 +2878,7 @@ void tplayer::AddShieldSkill(int skill)
 
 void tplayer::handleacmd()
 {
-	ul m=asyncbuffermutex.lock();
+    std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 	while(!acmd.empty())
 	{
 		switch(acmd.front())
@@ -3054,7 +3055,7 @@ void tplayer::gwprepare()
 		int a=cl->getsieget()-cl->ido;
 		if(a>1)
 		{
-			ul m=this->asyncbuffermutex.lock();
+            std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 			if(this->asyncbuffer==0)asyncbuffer=new buffer;
 			asyncbuffer->cmd(id, 0xb8) << (char)49 << a << cl->getsiegetimertype();
 		}

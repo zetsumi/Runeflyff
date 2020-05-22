@@ -7,7 +7,7 @@ tradeclass::tradeclass(tplayer *p1, tplayer *p2, int id1, int id2)
 :player1(p1),player2(p2),player1id(id1),player2id(id2),money1(0),money2(0)
 ,end(0),enderid(0),ok1(false),ok2(false),ok3(false),ok4(false)
 {
-	ul mm=mutex.lock();
+    std::lock_guard<std::mutex> guard(this->mutex);
 	inv1.resize(25, -1);
 	inv2.resize(25, -1);
 	num1.resize(25, 0);
@@ -16,9 +16,18 @@ tradeclass::tradeclass(tplayer *p1, tplayer *p2, int id1, int id2)
 
 void tradeclass::del(tplayer *player)
 {
-	ul mmm=(player==player1)?player2->playermutex.lock():player1->playermutex.lock();
+    std::unique_lock<std::mutex> player1guard (player1->playermutex, std::defer_lock);
+    std::unique_lock<std::mutex> player2guard (player2->playermutex, std::defer_lock);
+
+    if (player == player1) {
+        player2guard.lock();
+    }
+    else {
+        player1guard.lock();
+    }
+
 	{
-		ul mm=mutex.lock();
+        std::lock_guard<std::mutex> tradeguard(this->mutex);
 	}/*TODO*/
 	delete this;
 }
@@ -42,8 +51,16 @@ tradeclass::~tradeclass()
 
 void tradeclass::setok(tplayer *player)
 {
-	ul mm=mutex.lock();
-	ul mmm=(player==player1)?player2->playermutex.lock():player1->playermutex.lock();
+    std::lock_guard<std::mutex> tradeguard(this->mutex);
+    std::unique_lock<std::mutex> player1guard (player1->playermutex, std::defer_lock);
+    std::unique_lock<std::mutex> player2guard (player2->playermutex, std::defer_lock);
+
+    if (player == player1) {
+        player2guard.lock();
+    }
+    else {
+        player1guard.lock();
+    }
 
 	int playerid;
     if(player==player1)
@@ -68,8 +85,17 @@ void tradeclass::setok(tplayer *player)
 
 bool tradeclass::setok2(tplayer *player)
 {
-	ul mm=mutex.lock();
-	ul mmm=(player==player1)?player2->playermutex.lock():player1->playermutex.lock();
+    std::lock_guard<std::mutex> tradeguard(this->mutex);
+    std::unique_lock<std::mutex> player1guard (player1->playermutex, std::defer_lock);
+    std::unique_lock<std::mutex> player2guard (player2->playermutex, std::defer_lock);
+
+    if (player == player1) {
+        player2guard.lock();
+    }
+    else {
+        player1guard.lock();
+    }
+
 	int playerid;
     if(player==player1)
 	{
@@ -103,8 +129,18 @@ void tradeclass::setitem(tplayer *player, int a, int b, int c)
 	if(player->inv.getItem(b)==0)return;
 	if(player->inv.getItem(b)->getId()<=0)return;
 	if(player->inv.getItem(b)->num<c)return;
-	ul mm=mutex.lock();
-	ul mmm=(player==player1)?player2->playermutex.lock():player1->playermutex.lock();
+
+    std::lock_guard<std::mutex> tradeguard(this->mutex);
+    std::unique_lock<std::mutex> player1guard (player1->playermutex, std::defer_lock);
+    std::unique_lock<std::mutex> player2guard (player2->playermutex, std::defer_lock);
+
+    if (player == player1) {
+        player2guard.lock();
+    }
+    else {
+        player1guard.lock();
+    }
+
 	int playerid;
     if(player==player1)
 	{
@@ -123,8 +159,18 @@ void tradeclass::setitem(tplayer *player, int a, int b, int c)
 void tradeclass::setmoney(tplayer *player, int a)
 {
 	if((a<0)||(a>player->money))return;
-	ul mm=mutex.lock();
-	ul mmm=(player==player1)?player2->playermutex.lock():player1->playermutex.lock();
+
+    std::lock_guard<std::mutex> tradeguard(this->mutex);
+    std::unique_lock<std::mutex> player1guard (player1->playermutex, std::defer_lock);
+    std::unique_lock<std::mutex> player2guard (player2->playermutex, std::defer_lock);
+
+    if (player == player1) {
+        player2guard.lock();
+    }
+    else {
+        player1guard.lock();
+    }
+
 	int playerid;
     if(player1==player)
 	{

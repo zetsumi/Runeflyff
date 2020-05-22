@@ -7,7 +7,6 @@
 #include "buffer.h"
 #include "player.h"
 #include "cluster.h"
-#include "pmutex.h"
 #include "main.h"
 
 #define r_title 1
@@ -23,19 +22,19 @@ int tesztval2=1;
 
 int nranked[5]={1, 5, 8, 20, 9999};
 
-pmutex tguild::globalguildmutex;
+std::mutex tguild::globalguildmutex;
 int tguild::maxguildid=0;
 int tguild::maxguildownerid=0;
 int tguild::nguilds=0;
 
-pmutex guildtreemutex;
+std::mutex guildtreemutex;
 std::map<int, tguild*> guilds;
 std::map<int, tguild*> owguilds;
 std::map<std::string, tguild*> nameguilds;
 
 tguild* tguild::getguild(int id)
 {
-	pmutex::unlocker m=guildtreemutex.lock();
+    std::lock_guard<std::mutex> guard (guildtreemutex);
 	std::map<int, tguild*>::iterator i=guilds.find(id);
 	if(i!=guilds.end())return i->second;
 	else return 0;
@@ -43,7 +42,7 @@ tguild* tguild::getguild(int id)
 
 bool tguild::war(tplayer *p, const std::string &gname)
 {
-	pmutex::unlocker gm=guildmutex.lock();
+    std::lock_guard<std::mutex> guildguard (this->guildmutex);
 	if((disbanded)||(insiege)||(closetosiege))return false;
 	bool found=false;
 //	tguild *g;
@@ -52,12 +51,12 @@ bool tguild::war(tplayer *p, const std::string &gname)
 	int odbid;
 	if(waring==0)
 	{
-		pmutex::unlocker m=guildtreemutex.lock();
+        std::lock_guard<std::mutex> guildtreeguard (guildtreemutex);
 		std::map<int, tguild*>::iterator i;
 		for(i=guilds.begin();i!=guilds.end();++i)
 		if(i->second!=this)
 		{
-			ul m=i->second->guildmutex.lock();
+            std::lock_guard<std::mutex> otherguildguard (i->second->guildmutex);
 			if(i->second->name==gname)
 			{
 				if(i->second->waring!=0)
@@ -84,7 +83,7 @@ bool tguild::war(tplayer *p, const std::string &gname)
 					bs << 0xf000b036 << guildid;
 					bs.sndpstr(p->name);
 
-					pmutex::unlocker mm=q->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(q->asyncbuffermutex);
 					q->asyncbuffer2.push_back(buffer());
 					q->asyncbuffer2.back().copy(bs);
 //					if(q->asyncbuffer2==0)q->asyncbuffer2=new buffer;
@@ -128,7 +127,7 @@ void tguild::getwarendpacket(buffer *bs)
 void tguild::acceptwar(tplayer *p, int gid)
 {
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guard (this->guildmutex);
 		if((disbanded)||(insiege)||(closetosiege))return;
 
 	}
@@ -136,7 +135,7 @@ void tguild::acceptwar(tplayer *p, int gid)
 	if(g!=0)
 	{
 		{
-			pmutex::unlocker gm=guildmutex.lock();
+            std::lock_guard<std::mutex> guard (this->guildmutex);
 			if(waring!=0)
 			{
 				p->messagebox("You can't war more than one guild at a time");
@@ -144,10 +143,10 @@ void tguild::acceptwar(tplayer *p, int gid)
 			}
 		}
 
-		ul mm=g->guildmutex.lock();
+        std::lock_guard<std::mutex> enemyguildguard (g->guildmutex);
 		if(g->waring==0)
 		{
-			ul gm=guildmutex.lock();
+            std::lock_guard<std::mutex> guildguard (this->guildmutex);
 			waring=g;
 			g->waring=this;
 			/*2*/
@@ -194,7 +193,7 @@ void tguild::acceptwar(tplayer *p, int gid)
 
 void tguild::endwar(bool lost, bool won)
 {
-	pmutex::unlocker gm=guildmutex.lock();
+    std::lock_guard<std::mutex> guard (this->guildmutex);
 	if(disbanded)return;
 	waring=0;
 	wid=0;
@@ -227,7 +226,7 @@ void tguild::giveupwar(tplayer *p, int dbid)
 //	int wid;
 	bool ended=false;
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guard (this->guildmutex);
 		if(disbanded)return;
 		if((dbid==this->owner)&&(waring!=0))
 		{
@@ -258,7 +257,7 @@ void tguild::leaderkilled()
 //	int wid;
 	bool ended=false;
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guard (this->guildmutex);
 		if(disbanded)return;
 		if(waring==0)return;
 //		if((dbid==this->owner)&&(waring!=0))
@@ -297,7 +296,7 @@ void tguild::piece(int dbid)
 {
 	bool ended=false;
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guard (this->guildmutex);
 		if(disbanded)return;
 		if((dbid==owner)&&(waring!=0))
 		{
@@ -319,7 +318,7 @@ void tguild::piece(int dbid)
 }
 int tguild::getwaringid()
 {
-	pmutex::unlocker gm=guildmutex.lock();
+    std::lock_guard<std::mutex> guard (this->guildmutex);
 	int r=0;
 	if(disbanded)return -1;
 	if(waring!=0)r=waring->getguildid();
@@ -330,12 +329,12 @@ void tguild::updateglobalid()
 {
 	int a,b;
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guard (this->guildmutex);
 		a=guildid;
 		b=owner;
 	}
 	{
-		pmutex::unlocker gm=globalguildmutex.lock();
+        std::lock_guard<std::mutex> guard (globalguildmutex);
 		if(maxguildid<guildid)maxguildid=guildid;
 		if(maxguildownerid<owner)maxguildownerid=owner;
 		nguilds++;
@@ -353,7 +352,7 @@ void tguild::loadallguilds()
 	}
 	dbguilds.freeup();
 	{
-		pmutex::unlocker gm=tguild::globalguildmutex.lock();
+        std::lock_guard<std::mutex> guard (globalguildmutex);
 		logger.log("%d\n", tguild::nguilds);
 	}
 }
@@ -361,7 +360,7 @@ void tguild::loadallguilds()
 void tguild::saveallguilds()
 {
 	std::map<int,tguild*>::iterator gi;
-	pmutex::unlocker gm=guildtreemutex.lock();
+    std::lock_guard<std::mutex> guard (guildtreemutex);
 	for(gi=guilds.begin();gi!=guilds.end();gi++)
 	{
 		gi->second->save();
@@ -375,12 +374,12 @@ void tguild::getallguildinfo(tplayer *p)
 	buffer &bs=*p->bs;
 	bs.cmd(-1, 0x9f);
 	{
-		pmutex::unlocker m=tguild::globalguildmutex.lock(); 
+        std::lock_guard<std::mutex> guard (tguild::globalguildmutex);
 		a=tguild::maxguildid;
 		b=tguild::nguilds;
 	}
 	bs << a << b;
-	pmutex::unlocker m=guildtreemutex.lock();
+    std::lock_guard<std::mutex> guard (guildtreemutex);
 	for(i=guilds.begin();i!=guilds.end();++i)
 	{
 		bs << i->second->guildid;
@@ -417,17 +416,17 @@ return;
 */
 }
 
-pmutex guildsavemutex;
+std::mutex guildsavemutex;
 void tguild::save()
 {
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guard (this->guildmutex);
 		if(disbanded)return;
 	}
 
-	ul mmmm=guildsavemutex.lock();
+    std::lock_guard<std::mutex> guildsaveguard (guildsavemutex);
+    std::lock_guard<std::mutex> guildguard (this->guildmutex);
 
-	pmutex::unlocker gm=guildmutex.lock();
 	if(disbanded)return;
 	sqlquery &s4=dbguilds_g;
 	s4.addupdate("ownerid", toString(owner));
@@ -480,7 +479,7 @@ void tguild::deleteguild(tplayer *pl)
 {
 	buffer bs;
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guildguard(this->guildmutex);
 		if((insiege)||(closetosiege))return;
 		if(disbanded)return;
 		if(waring)return;
@@ -489,7 +488,7 @@ void tguild::deleteguild(tplayer *pl)
 		{
 			if((members.at(a).dbid!=-1)&&(members.at(a).p!=0))
 			{
-				ul mmm=members.at(a).p->asyncbuffermutex.lock();
+                std::lock_guard<std::mutex> guildplayerguard(members[a].p->asyncbuffermutex);
 				members.at(a).p->acmd.push(tplayer::ac_quit_guild);
 			}
 		}
@@ -503,18 +502,18 @@ void tguild::deleteguild(tplayer *pl)
 		s3.addupdate("guild", "0");
 		s3.update("guild="+toString(guildid));
 		{
-			pmutex::unlocker m=guildtreemutex.lock();
+            std::lock_guard<std::mutex> guildtreeguard(guildtreemutex);
 			guilds.erase(guildid);
 			owguilds.erase(owner);
 			if(name!="")nameguilds.erase(name);
 		}
 		{
-			pmutex::unlocker m=globalguildmutex.lock();
+            std::lock_guard<std::mutex> globalguildguard(globalguildmutex);
 			nguilds--;
 			if(this->guildid==maxguildid)
 			{
 				int a=-1;
-				pmutex::unlocker m=guildtreemutex.lock();
+                std::lock_guard<std::mutex> guildtreeguard(guildtreemutex);
 				for(std::map<int, tguild*>::iterator i=guilds.begin();i!=guilds.end();++i)
 					if(i->first>a)a=i->first;
 				maxguildid=-1;
@@ -522,7 +521,7 @@ void tguild::deleteguild(tplayer *pl)
 			if(this->owner==maxguildownerid)
 			{
 				int a=-1;
-				pmutex::unlocker m=guildtreemutex.lock();
+                std::lock_guard<std::mutex> guildtreeguard(guildtreemutex);
 				for(std::map<int, tguild*>::iterator i=owguilds.begin();i!=owguilds.end();++i)
 					if(i->first>a)a=i->first;
 				maxguildownerid=-1;
@@ -546,7 +545,7 @@ tguild::tguild(tplayer *p, int dbid, int plevel, int pjob, std::string &pname, i
 ,disbanded(false),insiege(false),closetosiege(false),siegecluster(0)
 {
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guildguard(this->guildmutex);
 		members.resize(80);
 
 		rigths.resize(5, 0x1f);
@@ -592,7 +591,7 @@ tguild::tguild(tplayer *p, int dbid, int plevel, int pjob, std::string &pname, i
 		s4.freeup();
 
 		{
-			pmutex::unlocker gm=guildtreemutex.lock();
+            std::lock_guard<std::mutex> guildtreeguard(guildtreemutex);
 //			tguild *ii=this;
 			guilds.insert(std::pair<int, tguild*>(guildid, this));
 			owguilds.insert(std::pair<int, tguild*>(owner, this));
@@ -608,7 +607,7 @@ tguild::tguild(sqlquery &s4)
 :nloggedin(0),nmembers(0),waring(0),cwing(false),disbanded(false),siegemoney(0),insiege(false),closetosiege(false),siegecluster(0)
 {
 	{
-		pmutex::unlocker gm=guildmutex.lock();
+        std::lock_guard<std::mutex> guildguard(this->guildmutex);
 
 		rigths.resize(5, 0x1f);
 		pay.resize(5, 0);
@@ -639,13 +638,13 @@ tguild::tguild(sqlquery &s4)
 		pay[4]=toInt(s4["m5"]);
 		cwtime=toInt(s4["cwtime"]);
 		{
-			pmutex::unlocker gm=guildtreemutex.lock();
+            std::lock_guard<std::mutex> guildtreeguard(guildtreemutex);
 			guilds.insert(std::pair<int, tguild*>(guildid, this));
 			owguilds.insert(std::pair<int, tguild*>(owner, this));
 			if(name!="")nameguilds.insert(std::pair<std::string, tguild*>(name, this));
 		}
 		{
-			ul m=dbguildsiege_mutex.lock();
+            std::lock_guard<std::mutex> guildsiegeguard(dbguildsiege_mutex);
 			sqlquery &s1=dbguildsiege;
 			s1.selectw("guildid=" + toString(guildid), "money");
 			if(s1.next())
@@ -909,7 +908,7 @@ int tguild::leave(tplayer *r, int dbid)
 			if(members.at(a).p!=0)
 			{
 				{
-					ul mm=members.at(a).p->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(members[a].p->asyncbuffermutex);
 					members.at(a).p->acmd.push(tplayer::ac_quit_guild);
 /*
 					ul mm=(r==members.at(a).p)?pmutex::dontlock():guildmutex.relockwhen(members.at(a).p->playermutex);
@@ -972,7 +971,7 @@ void tguild::sendlogin(tplayer *p)
 			exp=0;
 		}
 		int a;
-		ul mmm=p->asyncbuffermutex.lock();
+        std::lock_guard<std::mutex> guard(p->asyncbuffermutex);
 		if(p->asyncbuffer==0)p->asyncbuffer=new buffer;
 		buffer *bs=p->asyncbuffer;
 		bs->cmd(-1, 0x9e) << owner << owner;
@@ -1200,7 +1199,7 @@ void tguild::guildmulticast(buffer &bs)
 			if(p->p!=0)
 			{
 				{
-					pmutex::unlocker m=p->p->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(p->p->asyncbuffermutex);
 					if(p->p->asyncbuffer==0)p->p->asyncbuffer=new buffer;
 					*p->p->asyncbuffer << p->dbid;
 					(p->p->asyncbuffer)->copy(bs);
@@ -1221,7 +1220,7 @@ void tguild::guildmulticast3(buffer &bs)
 			if(p->p!=0)
 			{
 				{
-					pmutex::unlocker m=p->p->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(p->p->asyncbuffermutex);
 					if(p->p->asyncbuffer==0)p->p->asyncbuffer=new buffer;
 					(p->p->asyncbuffer)->copy(bs);
 				}
@@ -1241,7 +1240,7 @@ void tguild::guildmulticast31(buffer &bs, tplayer *toskip)
 			if((p->p!=0)&&(p->p!=toskip))
 			{
 				{
-					pmutex::unlocker m=p->p->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(p->p->asyncbuffermutex);
 					if(p->p->asyncbuffer==0)p->p->asyncbuffer=new buffer;
 					(p->p->asyncbuffer)->copy(bs);
 				}
@@ -1261,7 +1260,7 @@ void tguild::guildmulticast4(buffer &bs)
 			if(p->p!=0)
 			{
 				{
-					pmutex::unlocker m=p->p->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(p->p->asyncbuffermutex);
 					if(p->p->asyncbuffer==0)p->p->asyncbuffer=new buffer;
 					*p->p->asyncbuffer << p->id;
 					(p->p->asyncbuffer)->copy(bs);
@@ -1282,7 +1281,7 @@ void tguild::guildmulticast2(buffer &bs)
 			if(p->p!=0)
 			{
 				{
-					pmutex::unlocker m=p->p->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(p->p->asyncbuffermutex);
 					p->p->asyncbuffer2.push_back(buffer());
 					p->p->asyncbuffer2.back().copy(bs);
 //				if(p->p->asyncbuffer2==0)p->p->asyncbuffer2=new buffer;

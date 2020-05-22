@@ -2,12 +2,12 @@
 #define __trade_h__
 
 #include "vector2.h"
-#include "pmutex.h"
+#include "platform_threading.h"
 
 class tplayer;
 class tradeclass
 {
-	pmutex mutex;
+	std::mutex mutex;
     bool completetrade();
     tplayer *player1, *player2;
     int money1, money2, end, enderid, player1id, player2id;
@@ -21,7 +21,7 @@ public:
 	void del(tplayer *player);
 	void setender(int a, int id)
 	{
-		ul mm=mutex.lock();
+	    std::lock_guard<std::mutex> guard (this->mutex);
 		end=a;
 		enderid=id;
 	}

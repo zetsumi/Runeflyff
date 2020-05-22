@@ -17,60 +17,22 @@
 int loginserverPort=23000;
 const std::string& loginserverName="127.0.0.1";
 
-void* charserverthread(void *t)
-{
-	charserver *c;
-	int cancelstate;
-	c=((charserver*)t);
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&cancelstate);
-	//mysql_thread_init();
-	c->cmain();
-	//mysql_thread_end();
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,&cancelstate);
-	pthread_exit((void*)0);
-	return 0;
-}
-
-void* charserveracceptthread(void *t)
-{
-	charserver *c;
-	int cancelstate;
-	c=((charserver*)t);
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&cancelstate);
-	//mysql_thread_init();
-	c->amain();
-	//mysql_thread_end();
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,&cancelstate);
-	pthread_exit((void*)0);
-	return 0;
-}
-
 charserver::charserver(int a, std::string sip)
 :sck(a),endprg(false),ulong1(1),serverip(sip),hc(1),lsck(-1),startaccept(false)
 {
 	TimeOut.tv_sec = 0;
 	TimeOut.tv_usec = 1;
 
-	cthread=new pthread_t;
-	pthread_attr_init(&ptca);
-	pthread_attr_setdetachstate(&ptca, PTHREAD_CREATE_JOINABLE);
-
-    pthread_create(cthread, &ptca,charserverthread,(void*)this);
-	pthread_attr_destroy(&ptca);
-
-	athread=new pthread_t;
-	pthread_attr_init(&ptca);
-	pthread_attr_setdetachstate(&ptca, PTHREAD_CREATE_JOINABLE);
-
-    pthread_create(athread, &ptca,charserveracceptthread,(void*)this);
-	pthread_attr_destroy(&ptca);
-
+	cthread = std::thread([this]() -> void { this->cmain(); });
+	athread = std::thread([this]() -> void { this->amain(); });
 }
 
 charserver::~charserver()
 {
 	endprg=true;
-    pthread_join(*cthread,NULL);
+	if (cthread.joinable()) {
+	    cthread.join();
+	}
 }
 
 void charserver::dcall()
@@ -139,7 +101,7 @@ void charserver::cmain()
 				{
 					ido=GetTickCount();
 					{
-						pmutex::unlocker m=this->charservermutex.lock();
+					    std::lock_guard<std::mutex> guard(this->charservermutex);
 						this->doselect();
 					}
 					Sleep(1);
@@ -163,7 +125,7 @@ void charserver::cmain()
 		logger.log("Characterserver ended\n");
 	}
 
-    pthread_join(*athread,NULL);
+	athread.join();
 }
 
 charserver::tplayer::tplayer(charserver *o)
@@ -831,8 +793,9 @@ void charserver::tplayer::createchar()
 bool charserver::validate(const std::string n, const std::string p, int cid)
 {
 	bool retval=false;
-	pmutex::unlocker m=charservermutex.lock();
-	std::list<tplayer*>::iterator i;
+	std::lock_guard<std::mutex> guard(this->charservermutex);
+
+    std::list<tplayer*>::iterator i;
 	for(i=mplayers.begin();i!=mplayers.end();++i)
 	{
 		if((*i)->name==n)

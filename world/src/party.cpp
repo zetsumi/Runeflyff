@@ -1,21 +1,21 @@
 #include "stdafx.h"
 #include <set>
 #include "party.h"
-#include "pmutex.h"
 #include "player.h"
 #include "adat.h"
 
 #include "cluster.h"
 #include <windows.h>
 
-pmutex tparty::partycreatemutex;
+std::mutex tparty::partycreatemutex;
 std::vector2<tparty*> tparty::parties;
 std::list<int> tparty::freeparties;
 
 
 tparty* tparty::getparty(int i)
 {
-	pmutex::unlocker m=partycreatemutex.lock();
+    std::lock_guard<std::mutex> partycreateguard(partycreatemutex);
+
 	if((i>(int)parties.size())||(i<0))return 0;
 	if(parties.at(i)->used)return parties.at(i);
 	else return 0;
@@ -38,7 +38,7 @@ tparty::tparty()
 }
 tparty* tparty::create(tplayer *p, tplayer *leader)
 {
-	ul m=partycreatemutex.lock();
+    std::lock_guard<std::mutex> partycreateguard(partycreatemutex);
 	tparty *r=0;
 	if(!freeparties.empty())
 	{
@@ -70,7 +70,7 @@ bool tparty::create1(tplayer *p, tplayer *leader, int t)	//invited player calls 
 	if(p->cl!=leader->cl)return false;
 
 	{
-		ul mm=partymutex.lock();
+	    std::lock_guard<std::mutex> partyguard(this->partymutex);
 		if(used)return false;
 		maxpartymembers=8;
 		level=1;
@@ -98,7 +98,7 @@ bool tparty::create1(tplayer *p, tplayer *leader, int t)	//invited player calls 
 		ticket=t;
 	}
 	{
-		ul m=leader->playermutex.lock();
+	    std::lock_guard<std::mutex> leaderguard (leader->playermutex);
 		join(leader);
 		setplayerfocus(leader, leader->getfocus());
 	}
@@ -114,7 +114,7 @@ void tparty::loginpuffer(playerdata *p)
 //		tplayer *q=p->pl;
 		buffer *s=p->pl->bs;	//the player called this, this should be safe
 		{
-			ul m=p->pl->asyncbuffermutex.lock();
+            std::lock_guard<std::mutex> guard(p->pl->asyncbuffermutex);
 //			if(*p->bs==0)*p->bs=new buffer;
 			a=0;
 			if(advanced)a=1;
@@ -175,7 +175,7 @@ void tparty::partymulticast(buffer &bs)
 			if(p->pl!=0)
 			{
 				{
-					pmutex::unlocker m=p->pl->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(p->pl->asyncbuffermutex);
 					if(p->pl->asyncbuffer==0)p->pl->asyncbuffer=new buffer;
 					*p->pl->asyncbuffer << p->dbid;
 					p->pl->asyncbuffer->copy(bs);
@@ -186,7 +186,7 @@ void tparty::partymulticast(buffer &bs)
 
 bool tparty::join(tplayer *p)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return false;
 	bool retval=(nmembers<maxpartymembers);
 	if(retval)
@@ -212,7 +212,7 @@ void tparty::leave(int id, tplayer *p)
 {
 	bool endthis=false;
 	{
-		ul m=partymutex.lock();
+        std::lock_guard<std::mutex> partyguard(this->partymutex);
 		if(id==members[0]->dbid)return;
 		int a;
 		if(p->dbid==id)
@@ -248,7 +248,8 @@ void tparty::leave(int id, tplayer *p)
 		memberdata.resize(0);
 		members.resize(0);
 		used=false;
-		ul m=partycreatemutex.lock();
+
+        std::lock_guard<std::mutex> partycreateguard(partycreatemutex);
 		freeparties.push_front(ticket);
 		ticket=-1;
 	}
@@ -261,7 +262,7 @@ bool tparty::leave2(playerdata *pd,int a, tplayer *qc)
 	{
 		if(pd->pl!=0)
 		{
-			pmutex::unlocker m=members.at(a)->pl->asyncbuffermutex.lock();
+            std::lock_guard<std::mutex> guard(members[a]->pl->asyncbuffermutex);
 			if(members.at(a)->pl->asyncbuffer==0)members.at(a)->pl->asyncbuffer=new buffer;
 			members.at(a)->pl->asyncbuffer->cmd(members.at(a)->dbid, 0x82) << members.at(a)->dbid << 0;
 			pd->pl->acmd.push(tplayer::ac_quit_party);
@@ -290,7 +291,7 @@ bool tparty::leave2(playerdata *pd,int a, tplayer *qc)
 			if((members.at(a)->dbid!=-1)&&(members.at(a)->pl!=0))
 			{
 				{
-					pmutex::unlocker m=members.at(a)->pl->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(members[a]->pl->asyncbuffermutex);
 					if(members.at(a)->pl->asyncbuffer==0)members.at(a)->pl->asyncbuffer=new buffer;
 					members.at(a)->pl->asyncbuffer->cmd(members.at(a)->dbid, 0x82) << members.at(a)->dbid << 0;
 					members[a]->pl->acmd.push(tplayer::ac_quit_party);
@@ -375,7 +376,7 @@ int partylevelexp[9]={200,200,250,300,350,400,450,500,500};
 
 bool tparty::levelto10(tplayer *p)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return false;
 	if(level>=10) return false;
 	while(level<10)
@@ -395,7 +396,7 @@ bool tparty::levelto10(tplayer *p)
 
 void tparty::addexp(int Aexp, int Alevel, int Apoint)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return;
 	buffer bs;
     int a, oldlevel;
@@ -435,7 +436,7 @@ void tparty::addexp(int Aexp, int Alevel, int Apoint)
 
 void tparty::setexp(int id, int mode)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return;
     if((members.at(0)->pl!=0)&&(members.at(0)->dbid==id))
     {
@@ -450,7 +451,7 @@ void tparty::setexp(int id, int mode)
 void tparty::setitem(int id, int mode)
 {
 	{
-		ul m=partymutex.lock();
+        std::lock_guard<std::mutex> partyguard(this->partymutex);
 		if(!used)return;
 		if((members.at(0)->pl!=0)&&(members.at(0)->dbid==id))
 		{
@@ -479,7 +480,7 @@ void tparty::setitem(int id, int mode)
 */
 void tparty::partychat(tplayer *p, const char *nev, int id, const char *msg)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return;
 	buffer bs;
 	buffer bs1;
@@ -508,7 +509,7 @@ void tparty::partychat(tplayer *p, const char *nev, int id, const char *msg)
 				found=(x+z<45*45);
 				if(found)
 				{
-					pmutex::unlocker mmm=members.at(a)->pl->asyncbuffermutex.lock();
+				    std::lock_guard<std::mutex> guard(members[a]->pl->asyncbuffermutex);
 					if(members.at(a)->pl->asyncbuffer==0)members.at(a)->pl->asyncbuffer=new buffer;
 					members.at(a)->pl->asyncbuffer->add(bs);
 				}
@@ -516,7 +517,7 @@ void tparty::partychat(tplayer *p, const char *nev, int id, const char *msg)
 			if(!found)
 			{
 				{
-					pmutex::unlocker mm=members.at(a)->pl->asyncbuffermutex.lock();
+                    std::lock_guard<std::mutex> guard(members[a]->pl->asyncbuffermutex);
 					if(members.at(a)->pl->asyncbuffer==0)members.at(a)->pl->asyncbuffer=new buffer;
 					*members.at(a)->pl->asyncbuffer << p->dbid;
 					members.at(a)->pl->asyncbuffer->copy(bs1);
@@ -548,7 +549,7 @@ void tparty::partychat(tplayer *p, const char *nev, int id, const char *msg)
 
 void tparty::setname(int id, const std::string &nev)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return;
     if((members.at(0)->pl!=0)&&(members.at(0)->dbid==id)&&(!advanced))
 	{
@@ -565,7 +566,7 @@ void tparty::setname(int id, const std::string &nev)
 void tparty::memberassign(int id, int nid, tplayer *p)
 {
 	if(id==nid)return;
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return;
     int b;
 	const int a=0;
@@ -582,7 +583,12 @@ void tparty::memberassign(int id, int nid, tplayer *p)
 				alink=0;
 				if(members.at(0)->pl!=0)
 				{
-					ul m=(members[a]->pl==p)?pmutex::dontlock():members[a]->pl->playermutex.lock();
+                    std::unique_lock<std::mutex> playerguard (members[a]->pl->playermutex, std::defer_lock);
+
+                    if (members[a]->pl != p) {
+                        playerguard.lock();
+                    }
+
 					if(-20-10*linklevel!=0)
 					{
 					members.at(0)->pl->addstat1(DST_ATKPOWER_RATE, -20-10*linklevel);
@@ -596,7 +602,12 @@ void tparty::memberassign(int id, int nid, tplayer *p)
 				asc=0;
 				if(members.at(0)->pl!=0)
 				{
-					ul m=(members[a]->pl==p)?pmutex::dontlock():members[a]->pl->playermutex.lock();
+                    std::unique_lock<std::mutex> playerguard (members[a]->pl->playermutex, std::defer_lock);
+
+                    if (members[a]->pl != p) {
+                        playerguard.lock();
+                    }
+
 					if(-20-10*linklevel)
 					{
 						members.at(0)->pl->addstat1(DST_CHR_CHANCECRITICAL, -20-10*linklevel);
@@ -612,12 +623,22 @@ void tparty::memberassign(int id, int nid, tplayer *p)
 			members.at(a)=d;
 			if(members[a]->pl!=0)
 			{
-				ul m=(members[a]->pl==p)?pmutex::dontlock():members[a]->pl->playermutex.lock();
+                std::unique_lock<std::mutex> playerguard (members[a]->pl->playermutex, std::defer_lock);
+
+                if (members[a]->pl != p) {
+                    playerguard.lock();
+                }
+
 				members[a]->pl->partyslot=a;
 			}
 			if(members[b]->pl!=0)
 			{
-				ul m=(members[b]->pl==p)?pmutex::dontlock():members[b]->pl->playermutex.lock();
+                std::unique_lock<std::mutex> playerguard (members[a]->pl->playermutex, std::defer_lock);
+
+                if (members[a]->pl != p) {
+                    playerguard.lock();
+                }
+
 				members[b]->pl->partyslot=b;
 			}
 			buffer bs;
@@ -644,7 +665,7 @@ tparty* tparty::login(tplayer *p)
 		}
 	return 0;
 */
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return NULL;
 	for(int a=0;a<maxpartymembers;a++)
 		if(members.at(a)->dbid==p->dbid)
@@ -660,7 +681,7 @@ tparty* tparty::login(tplayer *p)
 
 void tparty::logout(tplayer *p)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	if(!used)return;
 	if(p->partyslot==0)
 	{
@@ -683,7 +704,7 @@ bool tparty::isleader(tplayer *p)
 
 void tparty::gotmoney(tplayer *p, int m)
 {
-	ul mmm=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	std::list<tplayer*> l;
 	this->getpplaround_l(p, l);
 	if(l.empty())
@@ -702,7 +723,7 @@ void tparty::gotmoney(tplayer *p, int m)
 tplayer* tparty::getseq(tplayer *p)
 {
 //	return p;	//disabled for stability
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	int a;
 	if(itemmode==0)return p;
 	else if(itemmode==2)
@@ -765,13 +786,13 @@ tplayer* tparty::getseq(tplayer *p)
 
 void tparty::getpplaround(tplayer *p, std::list<tplayer*> &l)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	getpplaround_l(p, l);
 }
 
 void tparty::getpplaround(tplayer *p, std::vector<tplayer*> &l)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard(this->partymutex);
 	getpplaround_l(p, l);
 }
 
@@ -812,7 +833,7 @@ double membersexp[8]={1.0, 1.2, 1.5, 1.8, 2.2, 2.5, 2.8, 3.0};
 void tparty::managePexp(tplayer *tamado, double expval, int elevel)
 {
 	{
-	ul m=partymutex.lock();
+        std::lock_guard<std::mutex> partyguard(this->partymutex);
 	{
 		int a,b=0;
 		float x,z;
@@ -859,7 +880,8 @@ void tparty::managePexp(tplayer *tamado, double expval, int elevel)
 
 void tparty::useskill(tplayer *p, int skill)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard (this->partymutex);
+
 	buffer bs;
 	character_base *q;
 	long long ido;
@@ -930,8 +952,19 @@ void tparty::useskill(tplayer *p, int skill)
 			for(int a=0;a<tparty::maxpartymembers;a++)
 				if(members.at(a)->pl!=0)
 				{
-					ul mmm=(p==members.at(a)->pl)?pmutex::dontlock():partymutex.relockwhen(members.at(a)->pl->playermutex);
-					if(members.at(a)->pl!=0)members.at(a)->pl->sitting=true;
+				    std::unique_lock<std::mutex> partyguard (this->partymutex, std::defer_lock);
+                    std::unique_lock<std::mutex> playerguard (members.at(a)->pl->playermutex, std::defer_lock);
+
+				    if (p == members.at(0)->pl) {
+				        if (!playerguard.owns_lock()) {
+                            playerguard.lock();
+                        }
+				        partyguard.lock();
+				    }
+
+					if(members.at(a)->pl != 0 ) {
+					    members.at(a)->pl->sitting=true;
+					}
 				}
 
 			stime=ido+2*60*1000;
@@ -951,13 +984,14 @@ void tparty::useskill(tplayer *p, int skill)
 
 bool tparty::testlink(long long ido)
 {
-	ul m=partymutex.lock();
+	std::lock_guard<std::mutex> partyguard (this->partymutex);
 	if(alink<ido)
 	{
 		alink=0;
 		if(members.at(0)->pl!=0)
 		{
-			ul mmm=members.at(0)->pl->playermutex.lock();
+		    std::lock_guard<std::mutex> playerguard (members.at(0)->pl->playermutex);
+
 			if(-20-10*linklevel!=0)
 			{
 				members.at(0)->pl->addstat1(DST_ATKPOWER_RATE, -20-10*linklevel);
@@ -970,13 +1004,14 @@ bool tparty::testlink(long long ido)
 
 bool tparty::testasc(long long ido)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard (this->partymutex);
 	if(asc<ido)
 	{
 		asc=0;
 		if(members.at(0)->pl!=0)
 		{
-			ul mmm=members.at(0)->pl->playermutex.lock();
+            std::lock_guard<std::mutex> playerguard (members.at(0)->pl->playermutex);
+
 			if(-20-10*linklevel)
 			{
 				members.at(0)->pl->addstat1(DST_CHR_CHANCECRITICAL, -20-10*linklevel);
@@ -989,7 +1024,7 @@ bool tparty::testasc(long long ido)
 
 void tparty::setplayerfocus(tplayer *p, character_base *f)
 {
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard (this->partymutex);
 	if((members[0]->pl==0)||(p==0))return;
 	if(p->cl!=members[0]->pl->cl)return;
 /*
@@ -1028,12 +1063,12 @@ void tparty::mmp(tplayer *p, float x, float z)
 	bs.cmd(p->dbid, 0xc6) << x << 0 << z;
 	bs.sndpstr(p->name);
 
-	ul m=partymutex.lock();
+    std::lock_guard<std::mutex> partyguard (this->partymutex);
 
 	for(int a=0;a<tparty::maxpartymembers;a++)
 		if(members.at(a)->pl!=0)
 		{
-			pmutex::unlocker m=members.at(a)->pl->asyncbuffermutex.lock();
+            std::lock_guard<std::mutex> guard(members[a]->pl->asyncbuffermutex);
 			if(members.at(a)->pl->asyncbuffer==0)members.at(a)->pl->asyncbuffer=new buffer;
 			members.at(a)->pl->asyncbuffer->add(bs);
 		}

@@ -1,28 +1,25 @@
 #ifndef __charserver_h__
 #define __charserver_h__
 
-#include "pmutex.h"
 #include "mysql.h"
 #include <list>
 #include <string>
 #include "buffer.h"
 #include "reciever.h"
 #include "m_queue.h"
+#include "platform_threading.h"
 
 class charserver
 {
 	int hc,lsck;
 	long long ulong1;
-	friend void *charserveracceptthread(void *t);
-	friend void *charserverthread(void *t);
-	pthread_attr_t ptca;
 
 	int sck;
 	void senddcmsg(std::string &name);
 
 	charserver(const charserver& a){};
 	mcon connection;
-    pthread_t *cthread, *athread;
+    std::thread cthread, athread;
 	void cmain();
 	void amain();
 	void dcall();
@@ -64,7 +61,7 @@ class charserver
 	TIMEVAL TimeOut;
 	fd_set readfds;
 	std::string serverip;
-	pmutex charservermutex;
+	std::mutex charservermutex;
 public:
 	bool endprg;
 	m_queue<std::string> to_dc;

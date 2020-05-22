@@ -8,7 +8,7 @@
 playershop::playershop(tplayer *o)
 :owner(o),opened(false)
 {
-	ul mm=shopmutex.lock();
+    std::lock_guard<std::mutex> shopguard(this->shopmutex);
 	itemek.resize(30, 255);
 	nitemek.resize(30, 0);
 	price.resize(30,0);
@@ -17,7 +17,7 @@ playershop::playershop(tplayer *o)
 
 void playershop::close(tplayer *player)
 {
-	ul mm=shopmutex.lock();
+    std::lock_guard<std::mutex> shopguard(this->shopmutex);
 	if(opened)
 	{
 		buffer bs;
@@ -26,7 +26,12 @@ void playershop::close(tplayer *player)
 
 		for(std::map<int, tplayer*>::iterator i=players.begin();i!=players.end();++i)
 		{
-			ul mm=(i->second==player)?i->second->playermutex.dontlock():i->second->playermutex.lock();
+		    std::unique_lock<std::mutex> guard(i->second->playermutex, std::defer_lock);
+
+		    if (i->second != player) {
+		        guard.lock();
+		    }
+
 			i->second->joinedshop=0;
 		}
 
@@ -49,7 +54,7 @@ void playershop::close(tplayer *player)
 void playershop::open(const std::string& n)
 {
 	{
-		ul mm=shopmutex.lock();
+        std::lock_guard<std::mutex> shopguard(this->shopmutex);
 		if((owner->bs==0)||(!owner->validnl()))return;
 		if(opened)return;
 		players.clear();
@@ -70,7 +75,7 @@ void playershop::open(const std::string& n)
 
 void playershop::login(tplayer *p)
 {
-	ul mm=shopmutex.lock();
+    std::lock_guard<std::mutex> shopguard(this->shopmutex);
 	if((owner->bs==0)||(!owner->validnl()))return;
 	int b,c;
 	nplayers++;
@@ -125,7 +130,7 @@ void playershop::login(tplayer *p)
 }
 void playershop::logout(tplayer *p)
 {
-	ul mm=shopmutex.lock();
+    std::lock_guard<std::mutex> shopguard(this->shopmutex);
 	if((owner->bs==0)||(!owner->validnl()))return;
 	if(p->joinedshop!=this)return;
 	
@@ -146,7 +151,7 @@ void playershop::logout(tplayer *p)
 
 void playershop::talk(const std::string &p, tplayer *player)
 {
-	ul mm=shopmutex.lock();
+    std::lock_guard<std::mutex> shopguard(this->shopmutex);
 	if((owner->bs==0)||(!owner->validnl()))return;
 	if(player->joinedshop!=this)return;
     buffer bs;
@@ -160,7 +165,12 @@ void playershop::shopmulticast(buffer &bs, tplayer *player)
 {
 	for(std::map<int, tplayer*>::iterator i=players.begin();i!=players.end();++i)
 	{
-		ul mmm=(i->second==player)?i->second->playermutex.dontlock():i->second->playermutex.lock();
+	    std::unique_lock<std::mutex> guard(i->second->playermutex, std::defer_lock);
+
+	    if (i->second != player) {
+	        guard.lock();
+	    }
+
 		*i->second->bs << i->second->getId();
 		i->second->add(bs);
 	}
@@ -170,14 +180,19 @@ void playershop::shopmulticast2(buffer &bs, tplayer *player)
 {
 	for(std::map<int, tplayer*>::iterator i=players.begin();i!=players.end();++i)
 	{
-		ul mmm=(i->second==player)?i->second->playermutex.dontlock():i->second->playermutex.lock();
+        std::unique_lock<std::mutex> guard(i->second->playermutex, std::defer_lock);
+
+        if (i->second != player) {
+            guard.lock();
+        }
+
 		i->second->add(bs);
 	}
 }
 
 bool playershop::removeitem(int a)
 {
-	ul mm=shopmutex.lock();
+    std::lock_guard<std::mutex> shopguard(this->shopmutex);
 	if((owner->bs==0)||(!owner->validnl()))return false;
 	if(!opened)
 	{
@@ -190,7 +205,7 @@ bool playershop::removeitem(int a)
 
 void playershop::additemtoshop(int a, int b, int c, int d)
 {
-	ul mm=shopmutex.lock();
+    std::lock_guard<std::mutex> shopguard(this->shopmutex);
 	if((owner->bs==0)||(!owner->validnl()))return;
 	if(!opened)
 	{
@@ -215,9 +230,9 @@ bool playershop::buyfromshop(int b, tplayer *player, int c, int d)
 	if(player->joinedshop!=this)return false;
 
 	buffer bs;
-	ul mm=shopmutex.lock();
+	std::lock_guard<std::mutex> shopguard(this->shopmutex);
 	{
-		ul mmm=owner->playermutex.lock();
+	    std::lock_guard<std::mutex> playerguard(owner->playermutex);
 
 		item targy, *t;
 		int e;

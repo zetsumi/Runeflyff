@@ -39,7 +39,12 @@ bool dotfunkc(character_buffable *p)
 
 bool chkbuffsfunkc(character_buffable *p)
 {
-	ul m=(p->type==character_base::ttplayer)?((tplayer*)p)->playermutex.lock():pmutex::dontlock();
+    std::unique_lock<std::mutex> guard (static_cast<tplayer*>(p)->playermutex, std::defer_lock);
+
+    if (p->type == character_base::ttplayer) {
+        guard.lock();
+    }
+
 	bool r=p->checkbuffs();
 	if(r)p->buffedremover.clear();
 	return r;
@@ -70,7 +75,12 @@ bool moverfunkc(character_base *p)
 {
 	bool r;
 	{
-		ul m=(p->type==character_base::ttplayer)?((tplayer*)p)->playermutex.lock():pmutex::dontlock();
+        std::unique_lock<std::mutex> guard (static_cast<tplayer*>(p)->playermutex, std::defer_lock);
+
+        if (p->type == character_base::ttplayer) {
+            guard.lock();
+        }
+
 		r=p->domove();
 		if(r)p->moverremover.clear();
 	}
@@ -276,7 +286,7 @@ while(!endprg)
 	{
 		tplayer *p=doselect_toerase.pop();
 		{
-			ul m=p->playermutex.lock();
+		    std::lock_guard<std::mutex> guard(p->playermutex);
 			p->save(true);
 		}
 	}
@@ -284,7 +294,7 @@ while(!endprg)
 	{
 		tplayer *p=logged_and_saved.pop();
 		{
-			ul m=p->playermutex.lock();
+            std::lock_guard<std::mutex> guard(p->playermutex);
 			players.releaseTicket(p->deinit());
 		}
 	}
@@ -306,7 +316,7 @@ while(!endprg)
 	{
 		tplayer *p=toload.pop();
 		{
-			ul mmm=p->playermutex.lock();
+            std::lock_guard<std::mutex> guard(p->playermutex);
 			if(loadplayer(p))
 			{
 				p->toprocess=true;
@@ -562,7 +572,7 @@ void cluster::cmain()
 		while(!endprg)
 		{
 			{
-				pmutex::unlocker mm=this->clustermutex.lock();
+                std::lock_guard<std::mutex> guard(this->clustermutex);
 				ido=GetTickCount();
 
 				if(sieget!=0)
@@ -598,7 +608,7 @@ void cluster::cmain()
 					{
 						p=toprocess.pop();
 						{
-							ul m=p->playermutex.lock();
+                            std::lock_guard<std::mutex> guard(p->playermutex);
 							p->process();
 						}
 					}
@@ -631,7 +641,7 @@ void cluster::cmain()
 						tplayer *p=cmain_toerase.pop();
 						dsplayers.erase(p->dslistpos);
 						{
-							ul m=p->playermutex.lock();
+                            std::lock_guard<std::mutex> guard(p->playermutex);
 							p->removefromcluster();
 						}
 						doselect_toerase.push(p);
@@ -709,7 +719,7 @@ void cluster::cmain()
 
 	}while(!endprg);
 
-    pthread_join(*crthread,NULL);
+    crthread.join();
 
 	{
 //		std::list<tplayer*>::iterator i;
@@ -717,18 +727,18 @@ void cluster::cmain()
 		for(std::vector2<tplayer>::iterator i=players.players.begin();i!=players.players.end();++i)
 		if(i->valid())
 		{
-			ul mmm=(i)->playermutex.lock();
+            std::lock_guard<std::mutex> guard(i->playermutex);
 			(i)->save();
 		}
 		for(std::vector2<tplayer>::iterator i=players.players.begin();i!=players.players.end();++i)
 		if(i->valid())
 		{
-			ul mmm=(i)->playermutex.lock();
+            std::lock_guard<std::mutex> guard(i->playermutex);
 			(i)->removefromcluster();
 		}
 	}
 	lsendprg=true;
-    pthread_join(*lsthread,NULL);
+    lsthread.join();
 
 
 	logger.log("%s ended\n", name.c_str());
@@ -769,35 +779,12 @@ cluster::cluster(int n, const char *nev, bool pk1)
 	objid=400000000;
 	npcid=700000000;
 	itemid=1000000000;
-	tp.n=n;
-	tp.c= std::shared_ptr<cluster>(this);
 
 	this->name=nev;
 
-	cthread=new pthread_t;
-	pthread_attr_init(&ptca);
-//	size_t stacksize;
-//	pthread_attr_getstacksize (&ptca, &stacksize);
-//	stacksize+=10*1024*1024;
-//	pthread_attr_setstacksize (&ptca, stacksize);
-	pthread_attr_setdetachstate(&ptca, PTHREAD_CREATE_JOINABLE);
-
-    pthread_create(cthread, &ptca,clusterthread,(void*)&tp);
-	pthread_attr_destroy(&ptca);
-
-	crthread=new pthread_t;
-	pthread_attr_init(&ptca);
-	pthread_attr_setdetachstate(&ptca, PTHREAD_CREATE_JOINABLE);
-
-    pthread_create(crthread, &ptca,recieverthread,(void*)&tp);
-	pthread_attr_destroy(&ptca);
-
-	lsthread=new pthread_t;
-	pthread_attr_init(&ptca);
-	pthread_attr_setdetachstate(&ptca, PTHREAD_CREATE_JOINABLE);
-
-    pthread_create(lsthread, &ptca,loadsavethread,(void*)&tp);
-	pthread_attr_destroy(&ptca);
+	cthread  = std::thread([this]() -> void { this->cmain();  });
+	crthread = std::thread([this]() -> void { this->crmain(); });
+	lsthread = std::thread([this]() -> void { this->lsmain(); });
 
 	ido=GetTickCount();
 }
@@ -873,51 +860,9 @@ void cluster::lsmain()
 	}
 }
 
-void* loadsavethread(void *t)
-{
-	cluster *c;
-	int cancelstate;
-	c=((threadparm*)t)->c.get();
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&cancelstate);
-	//mysql_thread_init();
-	c->lsmain();
-	//mysql_thread_end();
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,&cancelstate);
-	pthread_exit((void*)0);
-	return 0;
-}
-
-void* recieverthread(void *t)
-{
-	cluster *c;
-	int cancelstate;
-	c=((threadparm*)t)->c.get();
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&cancelstate);
-	//mysql_thread_init();
-	c->crmain();
-	//mysql_thread_end();
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,&cancelstate);
-	pthread_exit((void*)0);
-	return 0;
-}
-
-void* clusterthread(void *t)
-{
-	cluster *c;
-	int cancelstate;
-	c=((threadparm*)t)->c.get();
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE,&cancelstate);
-	//mysql_thread_init();
-	c->cmain();
-	//mysql_thread_end();
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,&cancelstate);
-	pthread_exit((void*)0);
-	return 0;
-}
-
 void cluster::handower(int sck1, reciever &sr1, std::string cip1)
 {
-	pmutex::unlocker m=this->clustermutex.lock();
+    std::lock_guard<std::mutex> guard(this->clustermutex);
 	//insert player here
 #ifdef _DEBUG
 #ifdef _LOGALOT
@@ -1115,7 +1060,7 @@ void cluster::doplayeract()
 	for(i=dsplayers.begin();i!=dsplayers.end();++i)
 		if((*i)->validnl())
 		{
-			ul mmm=(*i)->playermutex.lock();
+		    std::lock_guard<std::mutex> guard((*i)->playermutex);
 			(*i)->timer();
 		}
 }
@@ -1167,7 +1112,6 @@ void cluster::marklogged(const std::string username)
 void cluster::processmarklogged()
 {
 	std::list<tplayer*>::iterator i;
-	pmutex::unlocker mm;
 	std::string name;
 	while(!markloggedlist.empty())
 	{
@@ -1180,7 +1124,7 @@ void cluster::processmarklogged()
 		for(i=dsplayers.begin();i!=dsplayers.end();++i)
 		if((*i)->valid())
 		{
-			ul m=(*i)->playermutex.lock();
+            std::lock_guard<std::mutex> guard((*i)->playermutex);
 			if(name==(*i)->username)
 			{
 #ifdef _DEBUG
@@ -1223,7 +1167,7 @@ clustercont::clustercont(mcon *con, int n, int servernumber)
 
 clustercont::~clustercont()
 {
-	pmutex::unlocker m=clustercontmutex.lock();
+    std::lock_guard<std::mutex>(this->clustercontmutex);
 	delete bs;
 	bs=0;
 	delete ooo;
@@ -1232,11 +1176,11 @@ clustercont::~clustercont()
 
 void clustercont::multicast(buffer &bs1)
 {
-	pmutex::unlocker m=clustercontmutex.lock();
+    std::lock_guard<std::mutex>(this->clustercontmutex);
 	for(int a=0;a<nclusters;a++)
 	{
 		{
-			pmutex::unlocker m2=clusters[a]->asyncbuffermutex.lock();
+            std::lock_guard<std::mutex> guard(clusters[a]->asyncbuffermutex);
 			if(clusters[a]->asbs==0)clusters[a]->asbs=new buffer;
 			clusters[a]->asbs->copy(bs1);
 		}
@@ -1245,11 +1189,11 @@ void clustercont::multicast(buffer &bs1)
 
 void clustercont::multicastooo(buffer &bs1)
 {
-	pmutex::unlocker m=clustercontmutex.lock();
+    std::lock_guard<std::mutex>(this->clustercontmutex);
 	for(int a=0;a<nclusters;a++)
 	{
 		{
-			pmutex::unlocker m2=clusters[a]->asyncbuffermutex.lock();
+            std::lock_guard<std::mutex> guard(clusters[a]->asyncbuffermutex);
 			if(clusters[a]->asooo==0)clusters[a]->asooo=new buffer;
 			clusters[a]->asooo->copy(bs1);
 		}
@@ -1260,7 +1204,7 @@ void cluster::domulticasts()
 {
 	buffer *bs, *ooo;
 	{
-		pmutex::unlocker m=asyncbuffermutex.lock();
+        std::lock_guard<std::mutex> guard(this->asyncbuffermutex);
 		bs=asbs;
 		ooo=asooo;
 		asbs=0;
@@ -1285,7 +1229,7 @@ void cluster::domulticasts()
 	if((!ooolist.empty())||(bbs->getcommandnumber()>0))
 	for(i=dsplayers.begin();i!=dsplayers.end();++i)
 	{
-		ul mmm=(*i)->playermutex.lock();
+        std::lock_guard<std::mutex> guard((*i)->playermutex);
 		if((*i)->validnl())
 		{
 			if(bbs->getcommandnumber()>0)(*i)->add(*bbs);
@@ -1549,7 +1493,7 @@ void cluster::siege_prepare()
 	int nguilds=0;
 	std::vector2<int> guildids;
 	{
-		ul m=dbguildsiege_mutex.lock();
+        std::lock_guard<std::mutex> guard(dbguildsiege_mutex);
 		sqlquery &s1=dbguildsiege;
 		s1.select("count(*)");
 		if(s1.next())

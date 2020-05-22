@@ -4,12 +4,12 @@
 
 #include "vector2.h"
 #include <list>
-#include "pmutex.h"
+#include "platform_threading.h"
 
 template <class T>
 class tplayercont
 {
-	pmutex mutex;
+	std::mutex mutex;
 private:
 	friend class tplayer;
 	friend class cluster;
@@ -19,19 +19,19 @@ private:
 public:
 	bool hasFree()
 	{
-		ul m=mutex.lock();
+	    std::lock_guard<std::mutex> guard(this->mutex);
 		return !tickets.empty();
 	}
 	int getTicket()
 	{
-		ul m=mutex.lock();
+        std::lock_guard<std::mutex> guard(this->mutex);
 		int a=tickets.front();
 		tickets.pop_front();
 		return a;
 	}
 	void releaseTicket(int a)
 	{
-		ul m=mutex.lock();
+        std::lock_guard<std::mutex> guard(this->mutex);
 		tickets.push_front(a);
 	}
 	tplayercont(int n)

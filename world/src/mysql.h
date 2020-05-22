@@ -13,14 +13,19 @@
 #include "error.h"
 
 #include "logger.h"
-#include "pmutex.h"
 #include <stdexcept>
+
+#if __MINGW32__
+#include "mingw/mingw.mutex.h"
+#else
+#include <mutex>
+#endif
 
 
 class mcon
 {
 	std::string host, user, passwd, db;
-	pmutex mcmutex;
+	std::mutex mcmutex;
 	MYSQL *con;
 	void reconnect_l()
 	{
@@ -51,13 +56,13 @@ public:
 	}
 	void reconnect()
 	{
-		ul m=mcmutex.lock();
+	    std::lock_guard<std::mutex> guard(mcmutex);
 		reconnect_l();
 
 	}
 	bool init(char *mysqlhost, char *mysqluser, char *mysqlpasswd, char *mysqldb)
 	{
-		ul m=mcmutex.lock();
+		std::lock_guard<std::mutex> guard(this->mcmutex);
 		my_bool reconnect = 1;
 
 		host=mysqlhost;
@@ -76,7 +81,7 @@ public:
 	}
 	bool query(const std::string &str, MYSQL_RES **res, int &fieldcount, int &errnum, std::string &errstr)
 	{
-		ul m=mcmutex.lock();
+	    std::lock_guard<std::mutex> guard(this->mcmutex);
 //		sqllogger.log("%s\n", str.c_str());
 		mysql_ping(con);
 		*res=0;
@@ -97,7 +102,7 @@ public:
 
 	void real_escape_string(char *q, char *p, int lp)
 	{
-		ul m=mcmutex.lock();
+	    std::lock_guard<std::mutex> guard(this->mcmutex);
 		mysql_real_escape_string(con, q, p, lp);
 	}
 

@@ -7,7 +7,6 @@
 #include "funkciok.h"
 #include <list>
 #include "adat.h"
-#include "pmutex.h"
 #include "scheduler.h"
 #include "gridremover.h"
 

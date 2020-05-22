@@ -18,7 +18,7 @@ extern sqlquery dbguilds;
 extern sqlquery dbguilds_g;
 extern sqlquery dbcharacters_g;
 extern sqlquery dbguildsiege;
-extern pmutex dbguildsiege_mutex;
+extern std::mutex dbguildsiege_mutex;
 
 extern char mysqlhost[256];
 extern char mysqluser[256];
